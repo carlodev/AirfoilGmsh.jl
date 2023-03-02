@@ -42,118 +42,112 @@ io = start_writing(Airfoil, dimension, chord, refinement_params)
 addAirfoilPoints(Airfoil, Points, io)
     
 
-Airfoil.points.leading_edge[1]
-Airfoil.points.trailing_edge[1]
-Airfoil.sharp_end
-
-    # Create airfoil lines
+# Create airfoil lines
     
-    spline_airfoil_top = addSpline(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1], Lines, io)
-    spline_airfoil_le = addSpline(Airfoil.points.leading_edge[1] : Airfoil.points.leading_edge[2], Lines, io)
-    spline_airfoil_bottom = addSpline(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] , Lines, io)
+spline_airfoil_top = addSpline(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1], Lines, io)[end][1]
+spline_airfoil_le = addSpline(Airfoil.points.leading_edge[1] : Airfoil.points.leading_edge[2], Lines, io)[end][1]
+spline_airfoil_bottom = addSpline(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] , Lines, io)[end][1]
+    
+if ! is_sharp(Airfoil)
+    spline_airfoil_te = addLine(Airfoil.points.trailing_edge[1], Airfoil.points.trailing_edge[2], Lines, io)[end][1]
+end
+    
+
+    
+#External Domain points
+point1 = addPoint(0, "C", 0, Points, io; tag ="external")[end][1]
+point2 = addPoint(0, "-C", 0, Points, io; tag ="external")[end][1]
+    
+point5 = addPoint("L", "C", 0, Points, io; tag ="external")[end][1]
+point6 = addPoint("L", "-C", 0, Points, io; tag ="external")[end][1]
+    
+point3 = addPoint(chord, "C", 0, Points, io; tag ="external")[end][1]
+point4 = addPoint(chord, "-C", 0, Points, io; tag ="external")[end][1]
+    
+#Trailing edge point at the rear part
+#This allows the shear to rotate as the AoA impose it
+
+x_tmp, y_tmp = Points[Airfoil.points.trailing_edge[1]][2:3]
+point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA)", 0, Points, io; tag ="shear_external")[end][1]
+    
+    
+    
     
     if ! is_sharp(Airfoil)
-        spline_airfoil_te = addLine(Airfoil.points.trailing_edge[1], Airfoil.points.trailing_edge[2], Lines, io)
-    end
-    
-
-    
-    #External Domain points
-    point1 = addPoint(0, "C", 0)[end][1]
-    point2 = addPoint(0, "-C", 0)[end][1]
-    
-    point5 = addPoint("L", "C", 0)[end][1]
-    point6 = addPoint("L", "-C", 0)[end][1]
-    
-    point3 = addPoint(chord, "C", 0)[end][1]
-    point4 = addPoint(chord, "-C", 0)[end][1]
-    
-    #Trailing edge point at the rear part
-    #This allows the shear to rotate as the AoA impose it
-    x_tmp, y_tmp = Points[trailing_edge_point[1]][2:3]
-    point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA)", 0)[end][1]
-    
-    
-    
-    
-    if !sharp_end
-        x_tmp, y_tmp = Points[trailing_edge_point[2]][2:3]
-        point8 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA)", 0)[end][1]
+        x_tmp, y_tmp = Points[Airfoil.points.trailing_edge[2]][2:3]
+        point8 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA)", 0, Points, io; tag ="shear_external")[end][1]
     end
     
     
-    origin_idx = addPoint(0, 0, 0)[end][1]
-    println("new origin point")
+    origin_idx = addPoint(0, 0, 0, Points, io; tag ="origin")[end][1]
     
-    #add Refinement points
-    
-    
-    point1r = addPoint(" Refinement_offset*Sin(AoA)", " Refinement_offset*Cos(AoA)", 0)[end][1]
-    point2r = addPoint(" - Refinement_offset*Sin(AoA)", " - Refinement_offset*Cos(AoA)", 0)[end][1]
+    #add Refinement points   
+    point1r = addPoint(" Refinement_offset*Sin(AoA)", " Refinement_offset*Cos(AoA)", 0, Points, io; tag ="refinement")[end][1]
+    point2r = addPoint(" - Refinement_offset*Sin(AoA)", " - Refinement_offset*Cos(AoA)", 0, Points, io; tag ="refinement")[end][1]
     
     
-    x_tmp, y_tmp = Points[trailing_edge_point[1]][2:3]
-    point3r = addPoint("$chord*Cos(AoA)", "-$chord* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*$chord*Cos(AoA) + Refinement_offset", 0)[end][1]
-    point7r = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA)+ Refinement_offset", 0)[end][1]
+    x_tmp, y_tmp = Points[Airfoil.points.trailing_edge[1]][2:3]
+    point3r = addPoint("$chord*Cos(AoA)", "-$chord* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*$chord*Cos(AoA) + Refinement_offset", 0, Points, io; tag ="refinement")[end][1]
+    point7r = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA)+ Refinement_offset", 0, Points, io; tag ="refinement")[end][1]
     
-    if !sharp_end
-        x_tmp, y_tmp = Points[trailing_edge_point[2]][2:3]
+    if ! is_sharp(Airfoil)
+        x_tmp, y_tmp = Points[Airfoil.points.trailing_edge[2]][2:3]
     end
     
-    point8r = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA) - Refinement_offset", 0)[end][1]
-    point4r = addPoint("$chord*Cos(AoA)", "-$chord* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*$chord*Cos(AoA) - Refinement_offset", 0)[end][1]
+    point8r = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*L*Cos(AoA) - Refinement_offset", 0, Points, io; tag ="refinement")[end][1]
+    point4r = addPoint("$chord*Cos(AoA)", "-$chord* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) * "*$chord*Cos(AoA) - Refinement_offset", 0, Points, io; tag ="refinement")[end][1]
     
     
     
     
     
     
-    circ = addCirc(point2, origin_idx, point1)[end][1]
+    circ = addCirc(point2, origin_idx, point1, Lines, io; tag="external_circ")[end][1]
     
     
-    l1 = addLine(point1, point3)
-    l2 = addLine(point2, point4)
-    l3 = addLine(point3, point5)
-    l3t = addLine(point3r, trailing_edge_point[1])
+    l1 = addLine(point1, point3, Lines, io; tag = "external")[end][1]
+    l2 = addLine(point2, point4, Lines, io; tag = "external")[end][1]
+    l3 = addLine(point3, point5, Lines, io; tag = "external")[end][1]
+    l3t = addLine(point3r, Airfoil.points.trailing_edge[1], Lines, io; tag = "external")[end][1]
     
-    l2t = addLine(point4r, trailing_edge_point[idx_sharp])
+    l2t = addLine(point4r, Airfoil.points.trailing_edge[Airfoil.sharp_idx], Lines, io;)[end][1]
     
-    l4 = addLine(point4, point6)
-    l1l = addLine(point1, point1r)
-    l1lr = addLine(point1r, leading_edge_points[1])
+    l4 = addLine(point4, point6, Lines, io; tag = "external")[end][1]
+    l1l = addLine(point1, point1r, Lines, io)[end][1]
+    l1lr = addLine(point1r, Airfoil.points.leading_edge[1], Lines, io;)[end][1]
     
-    l2l = addLine(point2, point2r)
-    l2lr = addLine(point2r, leading_edge_points[2])
+    l2l = addLine(point2, point2r, Lines, io;)[end][1]
+    l2lr = addLine(point2r, Airfoil.points.leading_edge[2], Lines, io;)[end][1]
     
     
-    l5 = addLine(point5, point7r)
-    l5r = addLine(point7r, point7)
+    l5 = addLine(point5, point7r, Lines, io;)[end][1]
+    l5r = addLine(point7r, point7, Lines, io;)[end][1]
     
-    if sharp_end
-        l7 = addLine(point7, point8r)
-        l7 = addLine(point6, point8r)
+    if is_sharp(Airfoil)
+        l7 = addLine(point7, point8r, Lines, io;)[end][1]
+        l7 = addLine(point6, point8r, Lines, io;)[end][1]
     else
-        l7 = addLine(point7, point8)
-        l8r = addLine(point8, point8r)
-        l6r = addLine(point6, point8r)
-        l8t = addLine(point8, trailing_edge_point[2])
+        l7 = addLine(point7, point8, Lines, io;)[end][1]
+        l8r = addLine(point8, point8r, Lines, io;)[end][1]
+        l6r = addLine(point6, point8r, Lines, io;)[end][1]
+        l8t = addLine(point8, Airfoil.points.trailing_edge[2], Lines, io;)[end][1]
     
         #l3ter = addLine(point4r, trailing_edge_point[2])
     end
-    l7t = addLine(point7, trailing_edge_point[1])
+    l7t = addLine(point7, Airfoil.points.trailing_edge[1], Lines, io)[end][1]
     
     #Add Refinement lines
-    circr = addCirc(point2r, origin_idx, point1r)[end][1]
-    l13r = addLine(point1r, point3r)
-    l24r = addLine(point2r, point4r)
-    l37r = addLine(point3r, point7r)
-    l48r = addLine(point4r, point8r)
+    circr = addCirc(point2r, origin_idx, point1r, Lines, io)[end][1]
+    l13r = addLine(point1r, point3r, Lines, io)
+    l24r = addLine(point2r, point4r, Lines, io)
+    l37r = addLine(point3r, point7r, Lines, io)
+    l48r = addLine(point4r, point8r, Lines, io)
     
     
-    l33r = addLine(point3, point3r)
-    l44r = addLine(point4, point4r)
+    l33r = addLine(point3, point3r, Lines, io)
+    l44r = addLine(point4, point4r, Lines, io)
     
-    
+    close(io)
     
     loop1 = LoopfromPoints([point1, point1r, point2r, point2])
     loop1r = LoopfromPoints([point1r, leading_edge_points[1], leading_edge_points[2], point2r])
@@ -162,7 +156,7 @@ Airfoil.sharp_end
     loop2r = LoopfromPoints([point1r, point3r, trailing_edge_point[1], leading_edge_points[1]])
     
     loop3 = LoopfromPoints([point2, point4, point4r, point2r])
-    loop3r = LoopfromPoints([point2r, point4r, trailing_edge_point[idx_sharp], leading_edge_points[2]])
+    loop3r = LoopfromPoints([point2r, point4r, Airfoil.points.trailing_edge[Airfoil.sharp_idx], leading_edge_points[2]])
     
     LinefromPoints(point8r, point6)
     
