@@ -71,30 +71,8 @@ function map_entities(airfoil::AirfoilParams, PhysicalGroups::DataFrame, io::IOS
     end
     
     
-    for i = 1:1:size(periodicmap)[1]
-        write(io, "Periodic Surface {")
-
-        for i in 1:1:length(periodicmap.To[1])
-            if i == length(periodicmap.To[1])
-                write(io, "$(periodicmap.To[1][i])")
-            else
-                write(io, "$(periodicmap.To[1][i]),")
-            end
-         
-        end
-        write(io, "} = {")
-
-        for i =1:1:length(periodicmap.From[1])
-            if i == length(periodicmap.From[1])
-                write(io, "$(periodicmap.From[1][i])")
-
-            else
-                write(io, "$(periodicmap.From[1][i]),")
-
-            end
-      
-        end
-        write(io, "} Translate {0, 0, Hz};\n")
+    for i = 1:1:length(periodicmap.To[1])
+        write(io, "Periodic Surface {$(periodicmap.To[1][i])} = {$(periodicmap.From[1][i])} Translate {0, 0, Hz};\n")
     end
     
     
