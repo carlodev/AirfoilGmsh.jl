@@ -11,11 +11,12 @@ It is also possibile to provide extra arguments such as the Reynolds number and/
 It is possible to overwrite the extimation of the trailing edge and leading edge made by the code providing the relative points numbers.
 The mesh can be created in 2D or 3D. In 3D case by default are created periodic boundary conditions in the `z` direction.
 It is possible to create a mesh with the following options:
-Type of element | Dimension | Symbol |
-Quadrilateral | 2D | :QUAD|
-Hexaedral | 3D | :HEX|
-Triangular | 2D | :TRI|
-Thetraedreal | 3D | :TETRA|
+
+|Type of element | Dimension | Symbol |
+|Quadrilateral | 2D | :QUAD|
+|Hexaedral | 3D | :HEX|
+|Triangular | 2D | :TRI|
+|Thetraedreal | 3D | :TETRA|
 """
 function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD)
     
