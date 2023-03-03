@@ -5,43 +5,45 @@ using CSV
 
 
 
-# function main_create_geofile(filename; Reynolds = -1, h0 = -1, leading_edge_points = [], trailing_edge_point =[], chord=1, dimension=2, elements = :QUAD)
+# function main_create_geofile(filename; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_point = Int64[], chord=1.0, dimension=2, elements = :QUAD)
+
+
 
 filename = "c141a.csv"
-Reynolds = -1
+Reynolds=2e6
 h0 = -1
 leading_edge_points = Int64[]
 trailing_edge_points = Int64[]
 chord=1.0
-dimension=2
-elements = :QUAD
+dimension=3
+elements = :HEX
 
     # h0 first boundary layer cell height
     
     
 refinement_params = refinement_parameters(Reynolds, h0, chord)
     
-    if elements == :QUAD || elements == :HEX
-        recombine = true
+if elements == :QUAD || elements == :HEX
+    recombine = true
     else
-        recombine = false
-    end
+    recombine = false
+end
     
  
 Points = Vector[]
 Lines = Vector[]
 Surfaces = Vector[]
 Loops = Vector[]
-    
 PhysicalGroups = DataFrame(number=Int64[], name=String[], entities=Vector[], type=String[])
-    
+
+
 Airfoil = AirfoilParams(filename, chord, trailing_edge_points, leading_edge_points)
 
 io = start_writing(Airfoil, dimension, chord, refinement_params)
 
 addAirfoilPoints(Airfoil, Points, io)
     
-
+N_edge = 5
 # Create airfoil lines
     
 spline_airfoil_top = addSpline(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1], Lines, io)[end][1]
@@ -138,74 +140,70 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     
     #Add Refinement lines
     circr = addCirc(point2r, origin_idx, point1r, Lines, io)[end][1]
-    l13r = addLine(point1r, point3r, Lines, io)
-    l24r = addLine(point2r, point4r, Lines, io)
-    l37r = addLine(point3r, point7r, Lines, io)
-    l48r = addLine(point4r, point8r, Lines, io)
+    l13r = addLine(point1r, point3r, Lines, io; tag="refinement")[end][1]
+    l24r = addLine(point2r, point4r, Lines, io; tag="refinement")[end][1]
+    l37r = addLine(point3r, point7r, Lines, io; tag="refinement")[end][1]
+    l48r = addLine(point4r, point8r, Lines, io; tag="refinement")[end][1]
     
     
-    l33r = addLine(point3, point3r, Lines, io)
-    l44r = addLine(point4, point4r, Lines, io)
+    l33r = addLine(point3, point3r, Lines, io)[end][1]
+    l44r = addLine(point4, point4r, Lines, io)[end][1]
     
-    close(io)
+
+    loop1 = LoopfromPoints([point1, point1r, point2r, point2], Lines)
+    loop1r = LoopfromPoints([point1r, Airfoil.points.leading_edge[1], Airfoil.points.leading_edge[2], point2r], Lines)
     
-    loop1 = LoopfromPoints([point1, point1r, point2r, point2])
-    loop1r = LoopfromPoints([point1r, leading_edge_points[1], leading_edge_points[2], point2r])
+    loop2 = LoopfromPoints([point1, point3, point3r, point1r], Lines)
+    loop2r = LoopfromPoints([point1r, point3r,  Airfoil.points.trailing_edge[1],     Airfoil.points.leading_edge[1]], Lines)
     
-    loop2 = LoopfromPoints([point1, point3, point3r, point1r])
-    loop2r = LoopfromPoints([point1r, point3r, trailing_edge_point[1], leading_edge_points[1]])
+    loop3 = LoopfromPoints([point2, point4, point4r, point2r], Lines)
+    loop3r = LoopfromPoints([point2r, point4r, Airfoil.points.trailing_edge[Airfoil.sharp_idx], Airfoil.points.leading_edge[2]], Lines)
     
-    loop3 = LoopfromPoints([point2, point4, point4r, point2r])
-    loop3r = LoopfromPoints([point2r, point4r, Airfoil.points.trailing_edge[Airfoil.sharp_idx], leading_edge_points[2]])
+    LinefromPoints(point8r, point6, Lines)
     
-    LinefromPoints(point8r, point6)
+    loop4 = LoopfromPoints([point3, point5, point7r, point3r], Lines)
+    loop4r = LoopfromPoints([point3r, point7r, point7, Airfoil.points.trailing_edge[1]], Lines)
     
-    loop4 = LoopfromPoints([point3, point5, point7r, point3r])
-    loop4r = LoopfromPoints([point3r, point7r, point7, trailing_edge_point[1]])
+    loop5 = LoopfromPoints([point4, point6, point8r, point4r], Lines)
+    if is_sharp(Airfoil)
     
-    loop5 = LoopfromPoints([point4, point6, point8r, point4r])
-    if sharp_end
-    
-        loop5r = LoopfromPoints([point4r, point8r, point7, trailing_edge_point[idx_sharp]])
+        loop5r = LoopfromPoints([point4r, point8r, point7, Airfoil.points.trailing_edge[Airfoil.sharp_idx]], Lines)
     
     else
-        loop5r = LoopfromPoints([point4r, point8r, point8, trailing_edge_point[idx_sharp]])
+        loop5r = LoopfromPoints([point4r, point8r, point8, Airfoil.points.trailing_edge[Airfoil.sharp_idx]],Lines)
     
     
     end
     
-    loop1 = addLoop(loop1)[end][1]
-    loop2 = addLoop(loop2)[end][1]
-    loop3 = addLoop(loop3)[end][1]
-    loop4 = addLoop(loop4)[end][1]
-    loop5 = addLoop(loop5)[end][1]
+    loop1 = addLoop(loop1, Loops, io)[end][1]
+    loop2 = addLoop(loop2, Loops, io)[end][1]
+    loop3 = addLoop(loop3, Loops, io)[end][1]
+    loop4 = addLoop(loop4, Loops, io)[end][1]
+    loop5 = addLoop(loop5, Loops, io)[end][1]
     
-    loop1r = addLoop(loop1r)[end][1]
-    loop2r = addLoop(loop2r)[end][1]
-    loop3r = addLoop(loop3r)[end][1]
-    loop4r = addLoop(loop4r)[end][1]
-    loop5r = addLoop(loop5r)[end][1]
+    loop1r = addLoop(loop1r, Loops, io)[end][1]
+    loop2r = addLoop(loop2r, Loops, io)[end][1]
+    loop3r = addLoop(loop3r, Loops, io)[end][1]
+    loop4r = addLoop(loop4r, Loops, io)[end][1]
+    loop5r = addLoop(loop5r, Loops, io)[end][1]
     
-    addPlaneSurface(loop1)
-    addPlaneSurface(loop2)
-    addPlaneSurface(loop3)
-    addPlaneSurface(loop4)
-    addPlaneSurface(loop5)
+    addPlaneSurface(loop1, Surfaces, io)
+    addPlaneSurface(loop2, Surfaces, io)
+    addPlaneSurface(loop3, Surfaces, io)
+    addPlaneSurface(loop4, Surfaces, io)
+    addPlaneSurface(loop5, Surfaces, io)
     
-    addPlaneSurface(loop1r)
-    addPlaneSurface(loop2r)
-    addPlaneSurface(loop3r)
-    addPlaneSurface(loop4r)
-    addPlaneSurface(loop5r)
+    addPlaneSurface(loop1r, Surfaces, io)
+    addPlaneSurface(loop2r, Surfaces, io)
+    addPlaneSurface(loop3r, Surfaces, io)
+    addPlaneSurface(loop4r, Surfaces, io)
+    addPlaneSurface(loop5r, Surfaces, io)
     
-    if !sharp_end
-        loop6 = LoopfromPoints([point7, point8, trailing_edge_point[2], trailing_edge_point[1]])
-        loop6 = addLoop(loop6)[end][1]
-        addPlaneSurface(loop6)
+    if ! is_sharp(Airfoil)
+        loop6 = LoopfromPoints([point7, point8, Airfoil.points.trailing_edge[2], Airfoil.points.trailing_edge[1]],Lines)
+        loop6 = addLoop(loop6,Loops,io)[end][1]
+        addPlaneSurface(loop6, Surfaces, io)
     end
-    
-    
-    
     
     
     
@@ -213,38 +211,40 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     #Transfinite Curves
     
     #Leading Edge
-    leading_edge_lines = [LinefromPoints(point1, point2), LinefromPoints(point1r, point2r), LinefromPoints(leading_edge_points[1], leading_edge_points[2])]
-    TransfiniteCurve(leading_edge_lines, "N_inlet", 1.0)
+    leading_edge_lines = [LinefromPoints(point1, point2, Lines), 
+    LinefromPoints(point1r, point2r, Lines), 
+    LinefromPoints(Airfoil.points.leading_edge[1], Airfoil.points.leading_edge[2], Lines)]
+    TransfiniteCurve(leading_edge_lines, "N_inlet", 1.0, io)
     
     
     #Internal Lines
-    internal_lines = -1 .* [LinefromPoints(point1, point1r),
-        LinefromPoints(point3, point3r),
-        LinefromPoints(point5, point7r),
-        LinefromPoints(point6, point8r),
-        LinefromPoints(point4, point4r),
-        LinefromPoints(point2, point2r)]
+    internal_lines = -1 .* [LinefromPoints(point1, point1r, Lines),
+        LinefromPoints(point3, point3r, Lines),
+        LinefromPoints(point5, point7r, Lines),
+        LinefromPoints(point6, point8r, Lines),
+        LinefromPoints(point4, point4r, Lines),
+        LinefromPoints(point2, point2r, Lines)]
     
-    TransfiniteCurve(internal_lines, "N_vertical", "P_vertical")
+    TransfiniteCurve(internal_lines, "N_vertical", "P_vertical",io)
     
     
     #Refinement
-    if sharp_end
-        internal_lines = -1 .* [LinefromPoints(point1r, leading_edge_points[1]),
-            LinefromPoints(point3r, trailing_edge_point[1]),
-            LinefromPoints(point7r, point7),
-            LinefromPoints(point8r, point7),
-            -1 .* LinefromPoints(trailing_edge_point[idx_sharp], point4r),
-            LinefromPoints(point2r, leading_edge_points[2])]
+    if is_sharp(Airfoil)
+        internal_lines = -1 .* [LinefromPoints(point1r,     Airfoil.points.leading_edge[1], Lines),
+            LinefromPoints(point3r, trailing_edge_point[1], Lines),
+            LinefromPoints(point7r, point7, Lines),
+            LinefromPoints(point8r, point7, Lines),
+            -1 .* LinefromPoints(trailing_edge_point[idx_sharp], point4r, Lines),
+            LinefromPoints(point2r,     Airfoil.points.leading_edge[2], Lines)]
     else
-        internal_lines = -1 .* [LinefromPoints(point1r, leading_edge_points[1]),
-            LinefromPoints(point3r, trailing_edge_point[1]),
-            LinefromPoints(point7r, point7),
-            LinefromPoints(point8r, point8),
-            -1 .* LinefromPoints(trailing_edge_point[idx_sharp], point4r),
-            LinefromPoints(point2r, leading_edge_points[2])]
+        internal_lines = -1 .* [LinefromPoints(point1r,     Airfoil.points.leading_edge[1], Lines),
+            LinefromPoints(point3r, Airfoil.points.trailing_edge[1], Lines),
+            LinefromPoints(point7r, point7, Lines),
+            LinefromPoints(point8r, point8, Lines),
+            -1 .* LinefromPoints(Airfoil.points.trailing_edge[Airfoil.sharp_idx], point4r, Lines),
+            LinefromPoints(point2r,     Airfoil.points.leading_edge[2], Lines)]
     end
-    TransfiniteCurve(internal_lines, "N_refinement", "P_refinement")
+    TransfiniteCurve(internal_lines, "N_refinement", "P_refinement", io)
     
     
     
@@ -252,87 +252,87 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     
     
     
-    airfoil_lines = [LinefromPoints(point1, point3),
-        LinefromPoints(point1r, point3r),
-        LinefromPoints(trailing_edge_point[1], leading_edge_points[1]),
-        LinefromPoints(trailing_edge_point[idx_sharp], leading_edge_points[2]),
-        LinefromPoints(point2, point4),
-        LinefromPoints(point2r, point4r)]
-    TransfiniteCurve(airfoil_lines, "N_airfoil", 1.0)
+    airfoil_lines = [LinefromPoints(point1, point3, Lines),
+        LinefromPoints(point1r, point3r, Lines),
+        LinefromPoints(Airfoil.points.trailing_edge[1], Airfoil.points.leading_edge[1], Lines),
+        LinefromPoints(Airfoil.points.trailing_edge[Airfoil.sharp_idx], Airfoil.points.leading_edge[2], Lines),
+        LinefromPoints(point2, point4, Lines),
+        LinefromPoints(point2r, point4r, Lines)]
+    TransfiniteCurve(airfoil_lines, "N_airfoil", 1.0, io)
     
-    if sharp_end
-        shear_lines = [LinefromPoints(point3, point5),
-            LinefromPoints(point3r, point7r),
-            LinefromPoints(trailing_edge_point[1], point7),
-            LinefromPoints(point4r, point8r),
-            LinefromPoints(point4, point6)]
+    if is_sharp(Airfoil)
+        shear_lines = [LinefromPoints(point3, point5, Lines),
+            LinefromPoints(point3r, point7r, Lines),
+            LinefromPoints(trailing_edge_point[1], point7, Lines),
+            LinefromPoints(point4r, point8r, Lines),
+            LinefromPoints(point4, point6, Lines)]
     else
-        shear_lines = [LinefromPoints(point3, point5),
-            LinefromPoints(point3r, point7r),
-            LinefromPoints(trailing_edge_point[1], point7),
-            LinefromPoints(trailing_edge_point[2], point8),
-            LinefromPoints(point4r, point8r),
-            LinefromPoints(point4, point6)]
+        shear_lines = [LinefromPoints(point3, point5, Lines),
+            LinefromPoints(point3r, point7r, Lines),
+            LinefromPoints(Airfoil.points.trailing_edge[1], point7, Lines),
+            LinefromPoints(Airfoil.points.trailing_edge[2], point8, Lines),
+            LinefromPoints(point4r, point8r, Lines),
+            LinefromPoints(point4, point6, Lines)]
     
-        trailing_edge_lines = [LinefromPoints(trailing_edge_point[1], trailing_edge_point[2]), LinefromPoints(point7, point8)]
+        trailing_edge_lines = [LinefromPoints(Airfoil.points.trailing_edge[1], Airfoil.points.trailing_edge[2], Lines), LinefromPoints(point7, point8, Lines)]
     
-        N_edge = compute_non_sharp_divisions(h0, trailing_edge_point)
+        # N_edge = compute_non_sharp_divisions(h0, Airfoil.points.trailing_edge)
         println("N edge division = $N_edge")
-        TransfiniteCurve(trailing_edge_lines, N_edge, 1.0)
+        TransfiniteCurve(trailing_edge_lines, "N_edge", 1.0, io)
     
     
     end
     
-    TransfiniteCurve(shear_lines, "N_shear", "P_shear")
+    TransfiniteCurve(shear_lines, "N_shear", "P_shear",io)
     
     #Recombine and transfinite surfaces
-    if !sharp_end
-        TransfiniteSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
-        RecombineSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], recombine)
+    if ! is_sharp(Airfoil)
+        TransfiniteSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],io)
+        RecombineSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], recombine,io)
         #addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], "Surface")
     
     else
-        TransfiniteSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        RecombineSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], recombine)
+        TransfiniteSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10],io)
+        RecombineSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], recombine,io)
         #addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Surface")
     
     end
     
     if dimension == 2
         #Recombine and transfinite surfaces
-    if !sharp_end
-       addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], "Surface")
+        if !is_sharp(Airfoil)
+            addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], "Surface", PhysicalGroups, io)
+        
+        else
+            addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Surface", PhysicalGroups, io)
     
-    else
-        addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Surface")
-    
-    end
+        end
     #Add Physical Curve
-    addPhysicalGroup("airfoil", [spline_airfoil_top, spline_airfoil_bottom, spline_airfoil_le], "Curve")
+    addPhysicalGroup("airfoil", [spline_airfoil_top, spline_airfoil_bottom, spline_airfoil_le], "Curve",PhysicalGroups, io)
     
     
-    addPhysicalGroup("inlet", [circ], "Curve")
+    addPhysicalGroup("inlet", [circ], "Curve",PhysicalGroups, io)
     
-    addPhysicalGroup("outlet", [LinefromPoints(point5, point7r), LinefromPoints(point7r, point7), LinefromPoints(point6, point8r)], "Curve")
+    addPhysicalGroup("outlet", [LinefromPoints(point5, point7r, Lines), LinefromPoints(point7r, point7, Lines), LinefromPoints(point6, point8r, Lines)], "Curve", PhysicalGroups, io)
     
-    addPhysicalGroup("limits", [LinefromPoints(point1, point3), LinefromPoints(point2, point4), LinefromPoints(point3, point5), LinefromPoints(point4, point6)], "Curve")
-    
-    
-    addPhysicalGroup("airfoil", [leading_edge_points[1], leading_edge_points[2], trailing_edge_point[1]], "Point")
-    
-    addPhysicalGroup("limits", [point1, point2, point3, point4, point5, point6], "Point")
-    
-    addPhysicalGroup("outlet", [point7, point7r, point8r], "Point")
+    addPhysicalGroup("limits", [LinefromPoints(point1, point3, Lines), LinefromPoints(point2, point4, Lines), LinefromPoints(point3, point5, Lines), LinefromPoints(point4, point6, Lines)], "Curve", PhysicalGroups, io)
     
     
-    if !sharp_end
-        addPhysicalGroup("airfoil", [line_airfoil_te], "Curve"; add=true)
-        addPhysicalGroup("outlet", [LinefromPoints(point7, point8), LinefromPoints(point8, point8r)], "Curve"; add=true)
+    addPhysicalGroup("airfoil", [Airfoil.points.leading_edge[1], Airfoil.points.leading_edge[2], Airfoil.points.trailing_edge[1]], "Point", PhysicalGroups, io)
     
-        addPhysicalGroup("airfoil", [trailing_edge_point[2]], "Point"; add=true)
-        addPhysicalGroup("outlet", [point8], "Point"; add=true)
+    addPhysicalGroup("limits", [point1, point2, point3, point4, point5, point6], "Point", PhysicalGroups, io)
+    
+    addPhysicalGroup("outlet", [point7, point7r, point8r], "Point", PhysicalGroups, io)
+    
+
+    if ! is_sharp(Airfoil)
+        addPhysicalGroup("airfoil", [spline_airfoil_te], "Curve", PhysicalGroups, io; add=true)
+        addPhysicalGroup("outlet", [LinefromPoints(point7, point8, Lines), LinefromPoints(point8, point8r, Lines)], "Curve", PhysicalGroups, io; add=true)
+    
+        addPhysicalGroup("airfoil", [Airfoil.points.trailing_edge[2]], "Point", PhysicalGroups, io; add=true)
+        addPhysicalGroup("outlet", [point8], "Point", PhysicalGroups, io; add=true)
     else
-        addPhysicalGroup("outlet", [LinefromPoints(point7, point8r)], "Curve"; add=true)
+        addPhysicalGroup("outlet", [LinefromPoints(point7, point8r, Lines)], "Curve", PhysicalGroups, io; add=true)
     
     end
     
@@ -355,7 +355,7 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     write(io, extr_vol)
     
     
-    map_entities(N_airfoil_points, sharp_end)
+    map_entities(Airfoil, PhysicalGroups, io)
     
     end
     
