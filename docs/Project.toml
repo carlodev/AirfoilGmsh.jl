@@ -1,3 +1,4 @@
 [deps]
 AirfoilGmsh = "e68ec710-8e48-43c5-af1a-c38c4248fd7b"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
