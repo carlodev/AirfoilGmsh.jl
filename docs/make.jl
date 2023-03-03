@@ -14,7 +14,3 @@ deploydocs(
     repo = "github.com/carlodev/AirfoilGmsh.jl",
     push_preview = true,
 )
-
-using DocumenterTools
-using AirfoilGmsh
-DocumenterTools.genkeys(AirfoilGmsh)
