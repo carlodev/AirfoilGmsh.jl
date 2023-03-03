@@ -40,9 +40,11 @@ include("GmshUtils.jl")
 
 export refinement_parameters
 include("BLanalysis.jl")
+
+export map_entities
 include("MapLines.jl")
 
-# export main_create_geofile
-# include("CreateGeoFile.jl")
+export create_geofile
+include("CreateGeoFile.jl")
 
 end

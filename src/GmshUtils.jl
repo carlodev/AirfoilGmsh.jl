@@ -1,3 +1,8 @@
+"""
+    addAirfoilPoints(airfoil::AirfoilParams, Points::Vector{Vector}, io::IOStream; tag="")
+
+It writes on the .geo file the list of points of the airfoil.
+"""
 function addAirfoilPoints(airfoil::AirfoilParams, Points::Vector{Vector}, io::IOStream; tag="")
     airfoil_coo = get_coordinates(airfoil)
     for i = 1:1:(length(airfoil_coo[:, 1]))
@@ -46,9 +51,15 @@ end
 
 function addSpline(a, Lines::Vector{Vector}, io::IOStream; tag="")
     nn = length(Lines) + 1
-    str_tmp = "Spline($nn) = {$a};\n"
+    if typeof(a) <:Vector
+        str_tmp = "Spline($nn) = {$(a[1]), $(a[2])};\n"
+        push!(Lines, [nn, a[1][1], a[2], tag])
+    else
+        str_tmp = "Spline($nn) = {$a};\n"
+        push!(Lines, [nn, a[1], a[end], tag])
+    end
+ 
     write(io, str_tmp)
-    push!(Lines, [nn, a[1], a[end], tag])
 end
 
 function addCirc(a1, a2, a3, Lines::Vector{Vector}, io::IOStream; tag="")
@@ -58,13 +69,12 @@ function addCirc(a1, a2, a3, Lines::Vector{Vector}, io::IOStream; tag="")
     push!(Lines, [nn, a1, a3])
 end
 
-function getLinesNodes(i)
+function getLinesNodes(i::Int64, Lines::Vector{Vector})
     return (Lines[i][2], Lines[i][3])
-
 end
 
 
-function LoopfromPoints(a, Lines::Vector{Vector})
+function LoopfromPoints(a::Vector{Int64}, Lines::Vector{Vector})
     lines_id = Any[]
 
     push!(lines_id, LinefromPoints(a[1], a[2], Lines))
@@ -79,7 +89,7 @@ function LoopfromPoints(a, Lines::Vector{Vector})
 
         loop[end] > 0 ? ctrl_sing = 2 : ctrl_sing = 1
 
-        point_1 = getLinesNodes(abs(loop[end]))[ctrl_sing]
+        point_1 = getLinesNodes(abs(loop[end]),Lines)[ctrl_sing]
 
         if count < length(a)
             point_2 = a[count+1]
@@ -97,13 +107,13 @@ end
 
 
 
-function LinefromPoints(p1, p2, Lines::Vector{Vector})
+function LinefromPoints(p1::Int64, p2::Int64, Lines::Vector{Vector})
     p = [p1, p2]
     line_found = false
     line = 0
     while !line_found && line < length(Lines)
         line = line + 1
-        line_nodes = getLinesNodes(line)
+        line_nodes = getLinesNodes(line, Lines)
         line_nodes = [line_nodes[1], line_nodes[2]]
         sorted_line_nodes = sort(line_nodes)
         if sorted_line_nodes == sort(p)
@@ -123,7 +133,7 @@ function LinefromPoints(p1, p2, Lines::Vector{Vector})
 end
 
 
-function addLoop(a, Loops::Vector{Vector})
+function addLoop(a::Vector, Loops::Vector{Vector}, io::IOStream)
     nn = length(Loops) + 1
 
     str_tmp = "Curve Loop($nn) = {$(a[1]),$(a[2]),$(a[3]),$(a[4]) };\n"
@@ -133,7 +143,7 @@ function addLoop(a, Loops::Vector{Vector})
 
 end
 
-function addPlaneSurface(a, Surfaces::Vector{Vector})
+function addPlaneSurface(a, Surfaces::Vector{Vector}, io::IOStream)
     nn = length(Surfaces) + 1
 
     str_tmp = "Plane Surface($nn) = {$a};\n"
@@ -142,7 +152,7 @@ function addPlaneSurface(a, Surfaces::Vector{Vector})
 
 end
 
-function TransfiniteCurve(curves, nodes, progression)
+function TransfiniteCurve(curves::Vector, nodes::String, progression::Union{Float64,String}, io::IOStream)
     str_curves = "$(curves[1])"
     for i = 2:1:length(curves)
         str_curves = str_curves * ", $(curves[i])"
@@ -153,7 +163,7 @@ function TransfiniteCurve(curves, nodes, progression)
 
 end
 
-function TransfiniteSurfaces(surf)
+function TransfiniteSurfaces(surf::Vector, io::IOStream)
 
     for i = 1:1:length(surf)
         str_tmp = "Transfinite Surface {$(surf[i])};\n"
@@ -162,7 +172,7 @@ function TransfiniteSurfaces(surf)
    end
 end
 
-function RecombineSurfaces(surf, recombine)
+function RecombineSurfaces(surf::Vector, recombine::Bool, io::IOStream)
     if recombine
     str_surf = "$(surf[1])"
 
@@ -181,7 +191,7 @@ end
 
 
 
-function addPhysicalGroup(name::String, entities::Vector, type::String, PhysicalGroups::DataFrame; add=false)
+function addPhysicalGroup(name::String, entities::Vector, type::String, PhysicalGroups::DataFrame, io::IOStream; add=false)
 
     if type != "Point" && type != "Curve" && type != "Surface"
         error("Type of Physical Group not recognized, available:Point, Curve, Surface")
@@ -205,7 +215,6 @@ function addPhysicalGroup(name::String, entities::Vector, type::String, Physical
         append!(PhysicalGroups.entities[nn], entities)
 
     end
-    #println(str_tmp)
     write(io, str_tmp)
 
 end

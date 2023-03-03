@@ -49,7 +49,6 @@ function from_url_to_csv(url::String)
             end
     
             if val > -10 #the line is good
-                println(coordinates_tmp)
                 if coordinates == Float64[] #first set of coordinates
                     coordinates = coordinates_tmp'
                     empty_line = file_line

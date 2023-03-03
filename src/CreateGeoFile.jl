@@ -1,25 +1,23 @@
-using Revise
-using AirfoilGmsh
-using DataFrames
-using CSV
+"""
+    create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD)
 
-
-
-# function main_create_geofile(filename; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_point = Int64[], chord=1.0, dimension=2, elements = :QUAD)
-
-
-
-filename = "c141a.csv"
-Reynolds=2e6
-h0 = -1
-leading_edge_points = Int64[]
-trailing_edge_points = Int64[]
-chord=1.0
-dimension=3
-elements = :HEX
-
-    # h0 first boundary layer cell height
-    
+It is the main function of the package. From a csv file containing the airfoil points it creates a .geo file.
+The .geo file can be created using the function [`from_url_to_csv`](@ref).
+The user can specify just the file name.
+´´´julia
+    create_geofile("naca0012.csv")
+´´´
+It is also possibile to provide extra arguments such as the Reynolds number and/or the first layer height for a better extimation of the boundary-cell properties.
+It is possible to overwrite the extimation of the trailing edge and leading edge made by the code providing the relative points numbers.
+The mesh can be created in 2D or 3D. In 3D case by default are created periodic boundary conditions in the `z` direction.
+It is possible to create a mesh with the following options:
+Type of element | Dimension | Symbol |
+Quadrilateral | 2D | :QUAD|
+Hexaedral | 3D | :HEX|
+Triangular | 2D | :TRI|
+Thetraedreal | 3D | :TETRA|
+"""
+function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD)
     
 refinement_params = refinement_parameters(Reynolds, h0, chord)
     
@@ -28,7 +26,6 @@ if elements == :QUAD || elements == :HEX
     else
     recombine = false
 end
-    
  
 Points = Vector[]
 Lines = Vector[]
@@ -42,20 +39,25 @@ Airfoil = AirfoilParams(filename, chord, trailing_edge_points, leading_edge_poin
 io = start_writing(Airfoil, dimension, chord, refinement_params)
 
 addAirfoilPoints(Airfoil, Points, io)
-    
+Airfoil.points.leading_edge
+Airfoil.points.trailing_edge[Airfoil.sharp_idx]
+
 N_edge = 5
 # Create airfoil lines
     
 spline_airfoil_top = addSpline(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1], Lines, io)[end][1]
 spline_airfoil_le = addSpline(Airfoil.points.leading_edge[1] : Airfoil.points.leading_edge[2], Lines, io)[end][1]
-spline_airfoil_bottom = addSpline(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] , Lines, io)[end][1]
     
 if ! is_sharp(Airfoil)
     spline_airfoil_te = addLine(Airfoil.points.trailing_edge[1], Airfoil.points.trailing_edge[2], Lines, io)[end][1]
+    spline_airfoil_bottom = addSpline(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] , Lines, io)[end][1]
+else
+    b_points = [Airfoil.points.leading_edge[2]: Airfoil.points.num, Airfoil.points.trailing_edge[Airfoil.sharp_idx]]
+    spline_airfoil_bottom = addSpline(b_points, Lines, io)[end][1]
 end
-    
 
-    
+
+
 #External Domain points
 point1 = addPoint(0, "C", 0, Points, io; tag ="external")[end][1]
 point2 = addPoint(0, "-C", 0, Points, io; tag ="external")[end][1]
@@ -101,9 +103,8 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     
     
     
-    
-    
-    
+ 
+
     circ = addCirc(point2, origin_idx, point1, Lines, io; tag="external_circ")[end][1]
     
     
@@ -231,10 +232,10 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     #Refinement
     if is_sharp(Airfoil)
         internal_lines = -1 .* [LinefromPoints(point1r,     Airfoil.points.leading_edge[1], Lines),
-            LinefromPoints(point3r, trailing_edge_point[1], Lines),
+            LinefromPoints(point3r, Airfoil.points.trailing_edge[1], Lines),
             LinefromPoints(point7r, point7, Lines),
             LinefromPoints(point8r, point7, Lines),
-            -1 .* LinefromPoints(trailing_edge_point[idx_sharp], point4r, Lines),
+            -1 .* LinefromPoints(Airfoil.points.trailing_edge[Airfoil.sharp_idx], point4r, Lines),
             LinefromPoints(point2r,     Airfoil.points.leading_edge[2], Lines)]
     else
         internal_lines = -1 .* [LinefromPoints(point1r,     Airfoil.points.leading_edge[1], Lines),
@@ -263,7 +264,7 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     if is_sharp(Airfoil)
         shear_lines = [LinefromPoints(point3, point5, Lines),
             LinefromPoints(point3r, point7r, Lines),
-            LinefromPoints(trailing_edge_point[1], point7, Lines),
+            LinefromPoints(Airfoil.points.trailing_edge[1], point7, Lines),
             LinefromPoints(point4r, point8r, Lines),
             LinefromPoints(point4, point6, Lines)]
     else
@@ -365,7 +366,7 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     
     close(io)
     
-    
-    # end
+return io    
+ end
 
 

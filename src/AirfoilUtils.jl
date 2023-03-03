@@ -125,7 +125,6 @@ function findTE(trailing_edge_points, c::Float64, airfoil_points_list::Matrix{Fl
         trailing_edge_points = findall(x -> isapprox(x, c; atol=atol), airfoil_points_list[:, 1])
         atol = atol * 2
     end
-    println(trailing_edge_points)
     sort!(trailing_edge_points)
     trailing_edge_points
 end

@@ -1,5 +1,27 @@
+#Default Values
+const N_inlet = 30
+const N_vertical = 30
+const P_vertical = 1.1
+
+const N_airfoil = 50
+const N_shear = 30
+const P_shear = 1.2
+const L_domain = 6
+const C_domain = 6
+
+const Hz_coeff = 0.2
+const Nz_default = 22
+
+const N_edge = 7 #minimum value, it will be overwritten
+
+
+
+"""
+    start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64, refinement_params::Tuple)
+
+It starts writing a new .geo file. It writes all the custom parameters that can be later modified when the file is opened in Gmsh.
+"""
 function start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64, refinement_params::Tuple)
-    include("DefaultValues.jl")
     Refinement_offset, N_refinement, P_refinement, h0 = refinement_params
 
     io = open("$(Airfoil.name)_$(dimension)D.geo", "w")
