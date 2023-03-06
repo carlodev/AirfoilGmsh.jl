@@ -4,7 +4,7 @@
 
 It computes the total height covered by boundary layer cells. yh is the height of the first cell, G the growth ratio and N the total number of levels.
 """
-function yt(yh::Float64, G::Float64, N::Int)
+function yt(yh::Float64, G::Float64, N::Real)
     yh * (1 - G^N) / (1 - G)
 
 end
@@ -93,7 +93,7 @@ end
 
 function refinement_parameters(Reynolds::Real, h0::Real, chord::Real)
     if Reynolds < 0 && h0 < 0 #If no reynolds or height specified
-        return 0.35, 100, 1.15, h0
+        return 0.35, 100, 1.12, h0
     else
         H = 0.35 * chord
         if h0 < 0
