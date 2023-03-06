@@ -52,3 +52,7 @@ Finally, the `.geo` can be opened with [GMSH](https://gmsh.info/), an open sourc
 
 Example of a 3D mesh for the profile `c141a`:
 ![3D mesh detail](https://github.com/carlodev/AirfoilGmsh.jl/tree/master/docs/imgs/detail_c141a3D.png)
+
+## Knwon issues
+- In 3D case GMSH can have problems in re-creating the periodic mapping. It happens when the refinement is too high, lowering the ´P_refinement´ parameters can solve the problem (but keeping always >= 1)
+- When using custom csv file is better to start from the top point of the leading edge in anti-clockwise sense
