@@ -1,5 +1,6 @@
 # AirfoilGmsh
 
+<img src="https://github.com/fverdugo/AirfoilGmsh/docs/assets/logo.png" width="300" title="Logo">
 
 
 **Documentation**
@@ -53,6 +54,7 @@ Finally, the `.geo` can be opened with [GMSH](https://gmsh.info/), an open sourc
 Example of a 3D mesh for the profile `c141a`:
 
 ![3D mesh detail](https://github.com/carlodev/AirfoilGmsh.jl/tree/master/docs/src/assets/detail_c141a3D.png)
+<img src="https://github.com/carlodev/AirfoilGmsh.jl/tree/master/docs/src/assets/detail_c141a3D.png" width="300" title="3D mesh">
 
 ## Knwon issues
 - In 3D case GMSH can have problems in re-creating the periodic mapping. It happens when the refinement is too high, lowering the `P_refinement` parameters can solve the problem (but keeping always >= 1)
