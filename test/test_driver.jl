@@ -5,9 +5,9 @@ function test_airfoil(url::String)
     @test typeof(create_geofile(csvname)) == IOStream
     @test typeof(create_geofile(csvname; Reynolds=200e3)) == IOStream
     @test typeof(create_geofile(csvname; dimension = 3 )) == IOStream
-    rm(csvname)
-    rm(fname*"_2D.geo")
-    rm(fname*"_3D.geo")
+    # rm(csvname)
+    # rm(fname*"_2D.geo")
+    # rm(fname*"_3D.geo")
 end
 
 

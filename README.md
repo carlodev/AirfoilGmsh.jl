@@ -47,5 +47,5 @@ Finally you can easily create the `.geo` file.
 ```julia
 create_geofile(filename)
 ```
-It is possible specify different keywords argument, see the documentation for more details.
+Please see the [Documentation](https://carlodev.github.io/AirfoilGmsh.jl/) for more detailed examples and description of the package features.
 Finally, the `.geo` can be opened with [GMSH](https://gmsh.info/), an open source 3D finite element mesh generator.
