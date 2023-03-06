@@ -1,1 +1,6 @@
 /Manifest.toml
+*.gitignore
+Test_pkg.jl
+*.csv
+*.geo
+*.vtu

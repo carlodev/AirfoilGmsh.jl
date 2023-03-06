@@ -88,14 +88,14 @@ end
 
 
 function formatting_airfoil_points!(airfoil_points_list::Matrix{Float64}, c::Float64)
-    if airfoil_points_list[1, 1] != c
-        error("the file must start from the trailing edge")
-    end
-
     clockwise = is_clockwise(airfoil_points_list)
     if clockwise
         reverse!(airfoil_points_list, dims = 1)
     end
+
+   
+    airfoil_points_list =  verify_trailing_edge(airfoil_points_list,c)
+   return airfoil_points_list
 end
 
 """
@@ -112,6 +112,23 @@ function is_clockwise(Mat::Matrix{Float64})
     end
 
     return clockwise
+end
+
+function verify_trailing_edge(airfoil_points_list::Matrix{Float64}, c::Float64)
+    #Verify that starts with the trailing edge
+    if (airfoil_points_list[1, 1] == c && airfoil_points_list[1, 2] == 0) && (airfoil_points_list[end, 1] == c && airfoil_points_list[end, 2] == 0)
+    #Remove duplicate trailing edge
+    airfoil_points_list = airfoil_points_list[1:end-1,:]
+    
+    elseif airfoil_points_list[1, 1] != c # does not start with trailing edge
+        if airfoil_points_list[end, 1] == c # the trailing edge value is at the end
+            airfoil_points_list = circshift(airfoil_points_list,1)
+        else
+            error("the file must start from the trailing edge")
+
+        end
+    end
+return airfoil_points_list
 end
 
 """

@@ -1,7 +1,7 @@
 name = "AirfoilGmsh"
 uuid = "e68ec710-8e48-43c5-af1a-c38c4248fd7b"
 authors = ["Carlo Brunelli"]
-version = "0.1.0"
+version = "0.1.2"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

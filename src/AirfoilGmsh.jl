@@ -15,6 +15,7 @@ export AirfoilParams
 export get_airfoil_features
 export get_coordinates
 export is_sharp
+export get_airfoil_name
 include("AirfoilUtils.jl")
 
 
