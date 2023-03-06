@@ -6,7 +6,6 @@ makedocs(
     pages = [
         "Introduction" => "index.md",
         "Usage" => "usage.md",
-        "References" => "ref.md"
     ],
 )
 

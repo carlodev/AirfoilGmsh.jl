@@ -14,7 +14,7 @@ The package is thought to automatize and optimize the procedure for creating str
 Features:
 
 ## version 0.1.2
-- Create the 3D mesh with periodic boundaries on Z directionµ
+- Create the 3D mesh with periodic boundaries on Z direction
 - You can spacify the type of elements: TRI/TETRA or QUAD/HEX
 
 ## version 0.1.1
@@ -22,12 +22,30 @@ Features:
 - You can specify the Reynolds and, if you prefer, the height of the first layer, the software automatically 
 looks for the best combination of number of layers (<150 in the refinement region) and growth ratio
 
-
-
 ## version 0.1.0
-- Generate a csv file from the url from http://airfoiltools.com/
+- Generate a csv file from the url from [airfoiltools](http://airfoiltools.com/) 
 - Create a .geo file ready to be opened by Gmsh
 - The mesh generated has also physical group: airfoil, inlet, outlet, limits
 - The mesh is compatible with the FEM Gridap
 - It allows to manage both sharp and non-sharp trailing edges
 - AoA, geometry dimensions, number of nodes and progression can be modified in Gmsh
+
+# Usage
+The usage of the package is extremely simple.
+The user can naviagate on aifoilttols.com and find the profile of interest and copy the url.
+The function `from_url_to_csv` locally creates a `.csv` file.
+```julia
+using AirfoilGmsh
+url = "https://m-selig.ae.illinois.edu/ads/coord/c141a.dat"
+filename = from_url_to_csv(url)
+```
+
+It is possible to skip the previous step is you already have the `.csv` file.
+The software tries to re-order the sequence of points in anti-clockwise order and starting from the top point at the trailing edge. If you experience any trouble, it is better to manually format you file of points following this order.
+Finally you can easily create the `.geo` file.
+
+```julia
+create_geofile(filename)
+```
+It is possible specify different keywords argument, see the documentation for more details.
+Finally, the `.geo` can be opened with [GMSH](https://gmsh.info/), an open source 3D finite element mesh generator.
