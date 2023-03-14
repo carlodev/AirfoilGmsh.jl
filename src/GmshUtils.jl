@@ -30,7 +30,7 @@ function addShearPoint(shear_coord, Points::Vector{Vector}, io::IOStream; tag="s
     str_tmp = "Point($nn) = {" * x_string * "," * y_string * "," * string(z) * ",a_dim};\n"
     push!(Points, [nn, x, y, z, tag])
     write(io, str_tmp)
-
+    return Points
 end
 
 
@@ -39,6 +39,7 @@ function addPoint(x, y, z, Points::Vector{Vector}, io::IOStream; tag="")
     str_tmp = "Point($nn) = {$x, $y, $z};\n"
     write(io, str_tmp)
     push!(Points, [nn, x, y, z, tag])
+    return Points
 end
 
 
@@ -47,6 +48,7 @@ function addLine(a1, a2, Lines::Vector{Vector}, io::IOStream; tag="")
     str_tmp = "Line($nn) = {$a1, $a2};\n"
     write(io, str_tmp)
     push!(Lines, [nn, a1, a2, tag])
+    return Lines
 end
 
 function addSpline(a, Lines::Vector{Vector}, io::IOStream; tag="")
@@ -58,8 +60,8 @@ function addSpline(a, Lines::Vector{Vector}, io::IOStream; tag="")
         str_tmp = "Spline($nn) = {$a};\n"
         push!(Lines, [nn, a[1], a[end], tag])
     end
- 
     write(io, str_tmp)
+    return Lines
 end
 
 function addCirc(a1, a2, a3, Lines::Vector{Vector}, io::IOStream; tag="")
@@ -67,6 +69,7 @@ function addCirc(a1, a2, a3, Lines::Vector{Vector}, io::IOStream; tag="")
     str_tmp = "Circle($nn) = {$a1, $a2, $a3};\n"
     write(io, str_tmp)
     push!(Lines, [nn, a1, a3])
+    return Lines
 end
 
 function getLinesNodes(i::Int64, Lines::Vector{Vector})
@@ -145,11 +148,9 @@ end
 
 function addPlaneSurface(a, Surfaces::Vector{Vector}, io::IOStream)
     nn = length(Surfaces) + 1
-
     str_tmp = "Plane Surface($nn) = {$a};\n"
     write(io, str_tmp)
     push!(Surfaces, [nn, a])
-
 end
 
 function TransfiniteCurve(curves::Vector, nodes::String, progression::Union{Float64,String}, io::IOStream)
