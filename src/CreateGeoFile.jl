@@ -1,25 +1,27 @@
 """
-    create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD)
+    create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = true)
 
 It is the main function of the package. From a csv file containing the airfoil points it creates a .geo file.
 The .geo file can be created using the function [`from_url_to_csv`](@ref).
 The user can specify just the file name.
-´´´julia
+```julia
     create_geofile("naca0012.csv")
-´´´
+```
 It is also possibile to provide extra arguments such as the Reynolds number and/or the first layer height for a better extimation of the boundary-cell properties.
 It is possible to overwrite the extimation of the trailing edge and leading edge made by the code providing the relative points numbers.
 The mesh can be created in 2D or 3D. In 3D case by default are created periodic boundary conditions in the `z` direction.
-It is possible to create a mesh with the following options:\\
+It is possible to create a mesh with the following options:
 
-| Type of element | Dimension | Symbol    |
+
+| Type of element | Dimension | Symbol   |
 | ---------------|-----------|-----------|
 | Quadrilateral  | 2D        | :QUAD     |
 | Hexaedral      | 3D        | :HEX      |
 | Triangular     | 2D        | :TRI      |
 | Thetraedreal   | 3D        | :TETRA    |
+
 """
-function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD)
+function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = true)
     
 refinement_params = refinement_parameters(Reynolds, h0, chord)
     
@@ -368,7 +370,13 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     
     close(io)
     
-return io    
- end
+    ## Open GMSH for visualization of the .geo file and changing the parameters
+    if open_geo
+        open_gmsh(Airfoil, dimension)
+    end
+
+    return io    
+
+end
 
 

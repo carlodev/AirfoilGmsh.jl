@@ -219,3 +219,10 @@ function addPhysicalGroup(name::String, entities::Vector, type::String, Physical
     write(io, str_tmp)
 
 end
+
+function open_gmsh(Airfoil::AirfoilParams, dimension::Int64)
+    geofile = "$(Airfoil.name)_$(dimension)D.geo"
+    gmsh_cmd = `gmsh $geofile`
+    run(gmsh_cmd)
+
+end
