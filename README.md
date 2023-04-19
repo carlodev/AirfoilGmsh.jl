@@ -10,9 +10,16 @@
 [![Build Status](https://github.com/carlodev/AirfoilGmsh.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/carlodev/AirfoilGmsh.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![Coverage](https://codecov.io/gh/carlodev/AirfoilGmsh.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/carlodev/AirfoilGmsh.jl)
 
+## Installation
+The package has not been registered yet, so you can install the most recent release as:
+```julia
+using Pkg
+Pkg.add(url="https://github.com/carlodev/AirfoilGmsh.jl")
+```
+It also necessary to install [GMSH](https://gmsh.info/), a free open source mesh generator. To get the most out of the package, it is suggested to add `gmsh` to `PATH` environment variable.
 
+## Features
 The package is thought to automatize and optimize the procedure for creating structured airfoil meshes using Gmsh.
-Features:
 
 ## version 0.1.2
 - Create the 3D mesh with periodic boundaries on Z direction
@@ -33,7 +40,7 @@ looks for the best combination of number of layers (<150 in the refinement regio
 
 # Usage
 The usage of the package is extremely simple.
-The user can naviagate on aifoilttols.com and find the profile of interest and copy the url.
+The user can naviagate on [airfoiltools](http://airfoiltools.com/) and find the profile of interest and copy the url.
 The function `from_url_to_csv` locally creates a `.csv` file.
 ```julia
 using AirfoilGmsh
@@ -47,9 +54,12 @@ Finally you can easily create the `.geo` file.
 
 ```julia
 create_geofile(filename)
+
+create_geofile(filename; open_geo = false)
+
 ```
 Please see the [Documentation](https://carlodev.github.io/AirfoilGmsh.jl/) for more detailed examples and description of the package features.
-Finally, the `.geo` can be opened with [GMSH](https://gmsh.info/), an open source 3D finite element mesh generator.
+Finally, the `.geo` can be opened with [GMSH](https://gmsh.info/), an open source mesh generator.
 
 Example of a 3D mesh for the profile `c141a`:
 
@@ -57,4 +67,4 @@ Example of a 3D mesh for the profile `c141a`:
 
 ## Knwon issues
 - In 3D case GMSH can have problems in re-creating the periodic mapping. It happens when the refinement is too high, lowering the `P_refinement` parameters can solve the problem (but keeping always >= 1)
-- When using custom csv file is better to start from the top point of the leading edge in anti-clockwise sense
+- When using custom csv file is better to start from the top point of the leading edge in anti-clockwise sense, passing from the top side, to the leading edge and then the lower side (XFOIL format).
