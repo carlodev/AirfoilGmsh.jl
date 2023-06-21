@@ -6,6 +6,10 @@ using DataFrames
 using XLSX
 using Chain
 using Downloads
+using Plots
+using Optim
+using Optimization, OptimizationBBO
+using Parameters
 
 export from_url_to_csv
 include("ReadWeb.jl")
@@ -47,5 +51,15 @@ include("MapLines.jl")
 
 export create_geofile
 include("CreateGeoFile.jl")
+
+export CST_airfoil
+include("CST.jl")
+
+export increase_resolution_airfoil
+export cst2csv
+export read_airfoil
+export get_airfoil_coordinates
+export get_airfoil_coordinates_
+include("OptimizationCST.jl")
 
 end
