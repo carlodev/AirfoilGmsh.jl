@@ -53,8 +53,8 @@ function boundary_layer_characteristics(Re::Real, H::Real, h0::Real, chord::Floa
             G = G - 0.01
         else
 
-            println("Can't find an appropriate growth ratio, reducing the inital height")
-            println("h0 = $h0 m")
+            @info "Can't find an appropriate growth ratio, reducing the inital height"
+            @info "h0 = $h0 m"
 
             h0 = h0 - 0.1 * h0
         end
@@ -100,7 +100,7 @@ function refinement_parameters(Reynolds::Real, h0::Real, chord::Real)
             h0 = chord * sqrt(74) * Reynolds^(-13 / 14)
             println("Extimated h0 = $h0 m")
         end
-        H_levels, N_levels, G = boundary_layer_characteristics(Reynolds, H, h0, chord)[1:3]
+        H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H, h0, chord)
 
         return H_levels, N_levels, G, h0
     end
