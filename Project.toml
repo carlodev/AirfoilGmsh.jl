@@ -38,7 +38,7 @@ julia = "1.8.2"
 Optim = "1.7.6"
 Optimization = "3.15.2"
 OptimizationBBO = "0.1.4"
-Parameters = 0.12.3"
+Parameters = "0.12.3"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
