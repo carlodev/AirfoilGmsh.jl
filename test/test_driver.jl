@@ -5,6 +5,8 @@ function test_airfoil(url::String)
     @test typeof(create_geofile(csvname)) == IOStream
     @test typeof(create_geofile(csvname; Reynolds=200e3)) == IOStream
     @test typeof(create_geofile(csvname; dimension = 3 )) == IOStream
+    x,y,wl,wu = increase_resolution_airfoil(csvname,500; maxiters = 10, maxtime = 10)
+    @test typeof(x) <: Vector{Float64}
     # rm(csvname)
     # rm(fname*"_2D.geo")
     # rm(fname*"_3D.geo")

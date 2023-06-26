@@ -21,7 +21,7 @@ It is possible to create a mesh with the following options:
 | Thetraedreal   | 3D        | :TETRA    |
 
 """
-function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = true)
+function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = false)
     
 refinement_params = refinement_parameters(Reynolds, h0, chord)
     
@@ -294,12 +294,10 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     if ! is_sharp(Airfoil)
         TransfiniteSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],io)
         RecombineSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], recombine,io)
-        #addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], "Surface")
     
     else
         TransfiniteSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10],io)
         RecombineSurfaces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], recombine,io)
-        #addPhysicalGroup("fluid", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Surface")
     
     end
     
