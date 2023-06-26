@@ -2,7 +2,12 @@
 """
     from_url_to_csv(url::String)
 
-Provide an url from arifoiltools.com and it writes a formatted CSV.
+Provide an url from arifoiltools.com and it writes a formatted .csv which can be used to create the mesh.
+
+```julia
+url ="http://airfoiltools.com/airfoil/seligdatfile?airfoil=sd7003-il"
+filename = from_url_to_csv(url)
+```
 """
 function from_url_to_csv(url::String)
     #Read From the website

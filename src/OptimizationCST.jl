@@ -104,6 +104,24 @@ function cst2csv(wl,wu,dz,N; airfoil_name="Airfoil")
     return x,y
 end
 
+"""
+    increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = [-0.1294, -0.0036, -0.0666, -0.01, 0.206, 0.2728, 0.2292, 0.1, 0.1,0.1], maxiters = 100.0, maxtime=100.0)
+
+From a .csv file specified in ´filename´ it increase the points which define the airfoil surface, creating a total of ´N´ points. 
+´dz´ is the half height of the trailing edge.
+Internally solve a minimization problem to find the best set of ´w0´ that allows the CST to describe the input profile.
+Finally it writes .csv file where are stored the coordinates obtained with the cst method.
+```julia
+using Plots
+x,y,wl,wu = increase_resolution_airfoil("e1098.csv",500)
+x0,y0 = get_airfoil_coordinates_("e1098.csv")
+
+scatter(x,y, markersize=2.5, label = "CST")
+scatter!(x0,y0,markersize=2.5, markercolor= :red, label = "Original")
+plot!(xlims =(0.0,1.0), ylims =(-0.2,0.65))
+plot!(xlabel = "x", ylabel = "y")
+```
+"""
 function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = [-0.1294, -0.0036, -0.0666, -0.01, 0.206, 0.2728, 0.2292, 0.1, 0.1,0.1], maxiters = 100.0, maxtime=100.0)
     xu,xl,yu,yl = get_airfoil_coordinates(filename)
     y0 = [yu;yl]
