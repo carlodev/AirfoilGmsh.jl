@@ -4,5 +4,8 @@
 ```@docs
 create_geofile
 from_url_to_csv
+
+increase_resolution_airfoil
+cst2csv
 ```
 

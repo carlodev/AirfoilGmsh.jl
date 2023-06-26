@@ -21,6 +21,10 @@ It also necessary to install [GMSH](https://gmsh.info/), a free open source mesh
 ## Features
 The package is thought to automatize and optimize the procedure for creating structured airfoil meshes using Gmsh.
 
+
+## version 0.1.3
+- Class Shape Transformation support
+
 ## version 0.1.2
 - Create the 3D mesh with periodic boundaries on Z direction
 - You can spacify the type of elements: TRI/TETRA or QUAD/HEX
@@ -68,3 +72,7 @@ Example of a 3D mesh for the profile `c141a`:
 ## Knwon issues
 - In 3D case GMSH can have problems in re-creating the periodic mapping. It happens when the refinement is too high, lowering the `P_refinement` parameters can solve the problem (but keeping always >= 1)
 - When using custom csv file is better to start from the top point of the leading edge in anti-clockwise sense, passing from the top side, to the leading edge and then the lower side (XFOIL format).
+
+## Aknowledgments
+The code for CST has been inspired by: Pramudita Satria Palar (2023). Airfoil generation using CST parameterization method (https://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method), MATLAB Central File Exchange. Retrieved June 26, 2023.
+
