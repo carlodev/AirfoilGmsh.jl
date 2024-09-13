@@ -22,7 +22,8 @@ It is possible to create a mesh with the following options:
 
 """
 function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = false)
-    
+
+
 refinement_params = refinement_parameters(Reynolds, h0, chord)
     
 if elements == :QUAD || elements == :HEX
@@ -49,9 +50,14 @@ Airfoil.points.trailing_edge[Airfoil.sharp_idx]
 N_edge = 5
 # Create airfoil lines
     
-spline_airfoil_top = addSpline(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1], Lines, io)[end][1]
-spline_airfoil_le = addSpline(Airfoil.points.leading_edge[1] : Airfoil.points.leading_edge[2], Lines, io)[end][1]
-    
+spline_airfoil_top = addSpline(collect(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1]), Lines, io;all=true)[end][1]
+
+spline_airfoil_le = addSpline(collect(Airfoil.points.leading_edge[1] : Airfoil.points.leading_edge[2]), Lines, io; all=true)[end][1]
+
+Airfoil.points.leading_edge[1] 
+Airfoil.points.leading_edge[2]
+Lines
+
 if ! is_sharp(Airfoil)
     spline_airfoil_te = addLine(Airfoil.points.trailing_edge[1], Airfoil.points.trailing_edge[2], Lines, io)[end][1]
     spline_airfoil_bottom = addSpline(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] , Lines, io)[end][1]
@@ -154,7 +160,7 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     l33r = addLine(point3, point3r, Lines, io)[end][1]
     l44r = addLine(point4, point4r, Lines, io)[end][1]
     
-
+    
     loop1 = LoopfromPoints([point1, point1r, point2r, point2], Lines)
     loop1r = LoopfromPoints([point1r, Airfoil.points.leading_edge[1], Airfoil.points.leading_edge[2], point2r], Lines)
     

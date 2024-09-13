@@ -1,4 +1,4 @@
-function map_entities(airfoil::AirfoilParams, PhysicalGroups::DataFrame, io::IOStream)
+function map_entities(airfoil::AirfoilParams, PhysicalGroups::DataFrame, io::IOStream; pfc=false)
     
     N_airfoil_points = airfoil.points.num
     sharp_end = airfoil.sharp_end
@@ -10,11 +10,11 @@ function map_entities(airfoil::AirfoilParams, PhysicalGroups::DataFrame, io::IOS
         sheet = "NonSharp"
     end
     
-    periodicmap = get_map_periodic_surfaces(sharp_end)
+    periodicmap = get_map_periodic_surfaces(sharp_end,pfc)
     
-    points_physical_map = get_map_points(sharp_end) 
-    lines_physical_map = get_map_lines(sharp_end) 
-    surfaces_physical_map = get_map_surfaces(sharp_end) 
+    points_physical_map = get_map_points(sharp_end,pfc) 
+    lines_physical_map = get_map_lines(sharp_end,pfc) 
+    surfaces_physical_map = get_map_surfaces(sharp_end,pfc) 
     
     
     points_physical = Vector[]
@@ -80,7 +80,8 @@ end
 
 
 
-function get_map_points(sharp_end::Bool)
+function get_map_points(sharp_end::Bool,pfc::Bool)
+    if pfc==false
 if sharp_end
     v1 = 7, 13, 12,  26, 30, 24
     v2 = 2, 6, 4, 18, 21, 25, 1, 5, 3, 15, 19, 23
@@ -92,11 +93,21 @@ else
     v3 = 28, 29, 30, 31
 end
 
-    return DataFrame(Points =[v1, v2, v3], Physical=["outlet", "limits", "airfoil"])
+else
+    v1 = 22,    16,    21,    35,    39,    32    
+    v2 = 11,    15,    27,    28,    13,    34,    14,    30,    10,    24,    7,    8,    9,    44,    42,    40,    12,    31
+    
+    v3 = 36,    37,    46,    47,    48,    38
+    
+
+end
+
+return DataFrame(Points =[v1, v2, v3], Physical=["outlet", "limits", "airfoil"])
 end
 
 
-function get_map_lines(sharp_end::Bool)
+function get_map_lines(sharp_end::Bool,pfc::Bool)
+    if pfc==false
     if sharp_end
         v1 = 1, 2, 3, 58, 62, 64, 57, 55, 60
         v2 = 4, 34
@@ -112,12 +123,19 @@ function get_map_lines(sharp_end::Bool)
         v4= 16, 17, 18, 19, 20, 55, 72, 69, 50, 56, 73, 75, 70, 51
 
     end
+else
+    v1 =1,2,3,4,5,6,98,104,101,68,70,107,100,71,75,106,103,73
+    v2= 7,49
+    v3= 12,16,51,64,47,50,63,8,11,13,82,96,57,42,55,56,87,92,81,86,91,9,10
+    v4= 24,25,26,27,59,77,80,66,65,76,58
+end
     
         return DataFrame(Lines =[v1, v2, v3, v4], Physical=["airfoil", "inlet", "limits", "outlet"])
 end
 
 
-function get_map_surfaces(sharp_end::Bool)
+function get_map_surfaces(sharp_end::Bool,pfc::Bool)
+    if pfc==false
     if sharp_end
         v1 =14
         v2 =29, 45, 42, 25
@@ -135,12 +153,21 @@ function get_map_surfaces(sharp_end::Bool)
 
 
     end
-    
+else
+    v1 =20
+    v2= 27,42,46,32
+    v3= 31,22,26,60,56,52,48
+    v4= 72,64,40,36,67,70
+
+end
+
         return DataFrame(Surfaces =[v1, v2, v3, v4], Physical=["inlet", "outlet", "limits", "airfoil"])
 end
 
 
-function get_map_periodic_surfaces(sharp_end::Bool)
+function get_map_periodic_surfaces(sharp_end::Bool,pfc::Bool)
+    if pfc==false
+
 if sharp_end
     from = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
     to = 15,    19,    23,27,31,35,38,41,44,46
@@ -150,13 +177,15 @@ else
     to = 16,    20,    24,    28,    32,    36,    39,    42,    45,    48,    51
     
 end
+
+else
+    from = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15,16
+    to=21,25,30,34,38,41,45,47,51,55,59,62,65,68,71,73
+    
+end
+
 return DataFrame(From =from, To=to)
 end
 
-sa = get_map_periodic_surfaces(false)
-sa
-for i = 1:1:length(sa.To[1])
 
-    println(sa.To[1][i]) 
-end
 

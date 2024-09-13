@@ -10,6 +10,7 @@ using Plots
 using Optim
 using Optimization, OptimizationBBO
 using Parameters
+using CubicSplines
 
 export from_url_to_csv
 include("ReadWeb.jl")

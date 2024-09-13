@@ -47,7 +47,7 @@ function start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64,
 
     write(io, "AoA_deg = DefineNumber[ 0, Name \"Parameters/AoA\" ];\n")
     write(io, "AoA = AoA_deg*3.14159/180;\n")
-    write(io, "a_dim = 0.2;\n")
+    write(io, "a_dim = 2;\n")
 
 
         
