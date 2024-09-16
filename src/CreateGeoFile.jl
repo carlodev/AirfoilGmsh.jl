@@ -23,7 +23,7 @@ It is possible to create a mesh with the following options:
 """
 function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD,  H_levels=-1, N_levels=-1, G=-1)
 
-    open_geo = false
+open_geo = false
 
 boundary_layer = BoundaryLayer(H_levels,N_levels,G, Reynolds,h0, chord)
     
@@ -264,14 +264,18 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     
     
     
-    airfoil_lines = [LinefromPoints(point1, point3, Lines),
+    airfoil_lines_top = [LinefromPoints(point1, point3, Lines),
         LinefromPoints(point1r, point3r, Lines),
-        LinefromPoints(Airfoil.points.trailing_edge[1], Airfoil.points.leading_edge[1], Lines),
+        LinefromPoints(Airfoil.points.trailing_edge[1], Airfoil.points.leading_edge[1], Lines)]
+
+    airfoil_lines_bottom = [
         LinefromPoints(Airfoil.points.trailing_edge[Airfoil.sharp_idx], Airfoil.points.leading_edge[2], Lines),
         LinefromPoints(point2, point4, Lines),
         LinefromPoints(point2r, point4r, Lines)]
-    TransfiniteCurve(airfoil_lines, "N_airfoil", 1.0, io)
-    
+
+    TransfiniteCurve(airfoil_lines_top, "N_airfoil_top", 1.0, io)
+    TransfiniteCurve(airfoil_lines_bottom, "N_airfoil_bottom", 1.0, io)
+
     if is_sharp(Airfoil)
         shear_lines = [LinefromPoints(point3, point5, Lines),
             LinefromPoints(point3r, point7r, Lines),
