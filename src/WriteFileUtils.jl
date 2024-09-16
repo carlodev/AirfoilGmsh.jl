@@ -17,12 +17,15 @@ const N_edge = 7 #minimum value, it will be overwritten
 
 
 """
-    start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64, refinement_params::Tuple)
+    start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64, boundary_layer::BoundaryLayer)
 
 It starts writing a new .geo file. It writes all the custom parameters that can be later modified when the file is opened in Gmsh.
 """
-function start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64, refinement_params::Tuple)
-    Refinement_offset, N_refinement, P_refinement, h0 = refinement_params
+function start_writing(Airfoil::AirfoilParams, dimension::Int64, chord::Float64, boundary_layer::BoundaryLayer)
+
+    Refinement_offset = boundary_layer.H_levels
+    N_refinement = boundary_layer.N_levels
+    P_refinement = boundary_layer.G
 
     io = open("$(Airfoil.name)_$(dimension)D.geo", "w")
     write(io, "SetFactory(\"OpenCASCADE\");\n")

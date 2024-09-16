@@ -24,8 +24,6 @@ export get_airfoil_name
 include("AirfoilUtils.jl")
 
 
-export start_writing
-include("WriteFileUtils.jl")
 
 export addAirfoilPoints
 export addShearPoint
@@ -44,8 +42,12 @@ export RecombineSurfaces
 export addPhysicalGroup
 include("GmshUtils.jl")
 
-export refinement_parameters
+export BoundaryLayer
 include("BLanalysis.jl")
+
+
+export start_writing
+include("WriteFileUtils.jl")
 
 export map_entities
 include("MapLines.jl")

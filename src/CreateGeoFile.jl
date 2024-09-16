@@ -21,10 +21,11 @@ It is possible to create a mesh with the following options:
 | Thetraedreal   | 3D        | :TETRA    |
 
 """
-function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = false)
+function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD,  H_levels=-1, N_levels=-1, G=-1)
 
+    open_geo = false
 
-refinement_params = refinement_parameters(Reynolds, h0, chord)
+boundary_layer = BoundaryLayer(H_levels,N_levels,G, Reynolds,h0, chord)
     
 if elements == :QUAD || elements == :HEX
     recombine = true
@@ -41,7 +42,7 @@ PhysicalGroups = DataFrame(number=Int64[], name=String[], entities=Vector[], typ
 
 Airfoil = AirfoilParams(filename, chord, trailing_edge_points, leading_edge_points)
 
-io = start_writing(Airfoil, dimension, chord, refinement_params)
+io = start_writing(Airfoil, dimension, chord, boundary_layer)
 
 addAirfoilPoints(Airfoil, Points, io)
 Airfoil.points.leading_edge

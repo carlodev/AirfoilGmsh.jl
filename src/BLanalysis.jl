@@ -91,17 +91,41 @@ function boundary_layer_characteristics(Re::Real, H::Real, h0::Real, chord::Floa
 end
 
 
-function refinement_parameters(Reynolds::Real, h0::Real, chord::Real)
-    if Reynolds < 0 && h0 < 0 #If no reynolds or height specified
-        return 0.35, 100, 1.12, h0
-    else
-        H = 0.35 * chord
-        if h0 < 0
-            h0 = chord * sqrt(74) * Reynolds^(-13 / 14)
-            println("Extimated h0 = $h0 m")
-        end
-        H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H, h0, chord)
-
-        return H_levels, N_levels, G, h0
-    end
+mutable struct BoundaryLayer
+    H_levels::Real 
+    N_levels::Real
+    G::Real
+    h0::Real
 end
+
+function BoundaryLayer(H_levels::Float64,N_levels::Int64,G::Float64)
+    BoundaryLayer(H_levels,N_levels,G,0.0)
+end
+
+### Providing the Reynolds Number or Height.
+## If H0<0.0, then is not provided
+function BoundaryLayer(Reynolds::Real,h0::Float64, chord::Float64)
+    H = 0.35 * chord
+    
+    if h0<0.0 ### I am assuming it is a Reynolds number
+        h0 = chord * sqrt(74) * Reynolds^(-13 / 14)
+        println("Extimated h0 = $h0 m")
+    end
+
+    H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H, h0, chord)
+    BoundaryLayer(H_levels, N_levels, G)
+end
+
+function BoundaryLayer(H_levels,N_levels,G, Reynolds,h0, chord)
+if H_levels<0.0 && N_levels<0.0 && G<0.0
+    @assert chord>0.0
+    if Reynolds<0.0 && h0<0.0
+        return BoundaryLayer(0.35*chord, 85, 1.12, 0.0) ## Default values
+    end
+    return BoundaryLayer(Reynolds,h0, chord)
+else
+    return BoundaryLayer(H_levels,N_levels,G)
+end
+
+end
+
