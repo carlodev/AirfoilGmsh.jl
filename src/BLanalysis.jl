@@ -1,14 +1,3 @@
-@with_kw mutable struct BoundaryLayer
-    H_levels::Float64 = 0.35
-    N_levels::Float64 = 80
-    G::Real = 1.12
-    Reynolds::Int64=1e6
-    h0::Float64=1e-4
-end
-
-
-
-
 """
     yt(yh::Float64, G::Float64, N::Int)
 
@@ -101,14 +90,15 @@ function boundary_layer_characteristics(Re::Real, H::Real, h0::Real, chord::Floa
 end
 
 
-function BoundaryLayer(Reynolds::Int64,ds::DomainSize )
+function BoundaryLayer(Reynolds::Int64,ds::DomainInfo )
     @unpack chord = ds
     h0 = chord * sqrt(74) * Reynolds^(-13 / 14)
     BoundaryLayer(h0, ds)
 end
 
-function BoundaryLayer(h0::Float64, ds::DomainSize)
+function BoundaryLayer(h0::Float64, ds::DomainInfo)
     @unpack chord, H_offset = ds
     H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H_offset, h0, chord)
     BoundaryLayer(H_levels, N_levels, G,Reynolds, h0)
 end
+

@@ -1,5 +1,6 @@
 """
-    create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD, open_geo = true)
+  create_geofile(filename::String, domain_mesh_divisions::DomainMeshDivisions, domain_info::DomainInfo, boundary_layer::BoundaryLayer)
+
 
 It is the main function of the package. From a csv file containing the airfoil points it creates a .geo file.
 The .geo file can be created using the function [`from_url_to_csv`](@ref).
@@ -7,27 +8,34 @@ The user can specify just the file name.
 ```julia
     create_geofile("naca0012.csv")
 ```
-It is also possibile to provide extra arguments such as the Reynolds number and/or the first layer height for a better extimation of the boundary-cell properties.
-It is possible to overwrite the extimation of the trailing edge and leading edge made by the code providing the relative points numbers.
+It is possible to provide just the string of the filename.csv where the points are stored.
+It is also possible to customize the Mesh Division, Domain Size and provide information on the boundary layer.
+See the default parameters in the "DefaultValues.jl" file.
+
+
 The mesh can be created in 2D or 3D. In 3D case by default are created periodic boundary conditions in the `z` direction.
+
 It is possible to create a mesh with the following options:
 
 
-| Type of element | Dimension | Symbol   |
+| Type of element | Dimension | struct   |
 | ---------------|-----------|-----------|
-| Quadrilateral  | 2D        | :QUAD     |
-| Hexaedral      | 3D        | :HEX      |
-| Triangular     | 2D        | :TRI      |
-| Thetraedreal   | 3D        | :TETRA    |
+| Quadrilateral  | 2D        | QUAD()     |
+| Hexaedral      | 3D        | HEX()      |
+| Triangular     | 2D        | TRI()      |
+| Thetraedreal   | 3D        | TETRA()    |
 
 """
-function create_geofile(filename::String; Reynolds = -1, h0 = -1, leading_edge_points = Int64[], trailing_edge_points = Int64[], chord=1.0, dimension=2, elements = :QUAD,  H_levels=-1, N_levels=-1, G=-1)
 
-open_geo = false
+function create_geofile(filename::String, domain_mesh_divisions::DomainMeshDivisions, domain_info::DomainInfo, boundary_layer::BoundaryLayer)
 
-boundary_layer = BoundaryLayer(H_levels,N_levels,G, Reynolds,h0, chord)
+
+leading_edge_points = Int64[]
+trailing_edge_points = Int64[]
+
+@unpack chord,dimension = domain_info
     
-if elements == :QUAD || elements == :HEX
+if domain_info.elements == QUAD() || domain_info.elements == HEX()
     recombine = true
     else
     recombine = false
@@ -40,33 +48,28 @@ Loops = Vector[]
 PhysicalGroups = DataFrame(number=Int64[], name=String[], entities=Vector[], type=String[])
 
 
-Airfoil = AirfoilParams(filename, chord, trailing_edge_points, leading_edge_points)
+Airfoil = AirfoilParams( filename, chord, trailing_edge_points, leading_edge_points)
 
-io = start_writing(Airfoil, dimension, chord, boundary_layer)
+io = start_writing(Airfoil, domain_info, domain_mesh_divisions, boundary_layer)
 
 addAirfoilPoints(Airfoil, Points, io)
 Airfoil.points.leading_edge
 Airfoil.points.trailing_edge[Airfoil.sharp_idx]
 
-N_edge = 5
+N_edge = domain_mesh_divisions.Edge.numdiv
 # Create airfoil lines
-    
 spline_airfoil_top = addSpline(collect(Airfoil.points.trailing_edge[1] : Airfoil.points.leading_edge[1]), Lines, io;all=true)[end][1]
 
 spline_airfoil_le = addSpline(collect(Airfoil.points.leading_edge[1] : Airfoil.points.leading_edge[2]), Lines, io; all=true)[end][1]
 
-Airfoil.points.leading_edge[1] 
-Airfoil.points.leading_edge[2]
-Lines
-
 if ! is_sharp(Airfoil)
     spline_airfoil_te = addLine(Airfoil.points.trailing_edge[1], Airfoil.points.trailing_edge[2], Lines, io)[end][1]
-    spline_airfoil_bottom = addSpline(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] , Lines, io)[end][1]
+    spline_airfoil_bottom = addSpline(collect(Airfoil.points.leading_edge[2] : Airfoil.points.trailing_edge[Airfoil.sharp_idx] ), Lines, io; all=true)[end][1]
 else
     b_points = [Airfoil.points.leading_edge[2]: Airfoil.points.num, Airfoil.points.trailing_edge[Airfoil.sharp_idx]]
+    
     spline_airfoil_bottom = addSpline(b_points, Lines, io)[end][1]
 end
-
 
 
 #External Domain points
@@ -171,7 +174,8 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     loop3 = LoopfromPoints([point2, point4, point4r, point2r], Lines)
     loop3r = LoopfromPoints([point2r, point4r, Airfoil.points.trailing_edge[Airfoil.sharp_idx], Airfoil.points.leading_edge[2]], Lines)
     
-    LinefromPoints(point8r, point6, Lines)
+
+    LinefromPoints(Airfoil.points.trailing_edge[Airfoil.sharp_idx], Airfoil.points.leading_edge[2], Lines)
     
     loop4 = LoopfromPoints([point3, point5, point7r, point3r], Lines)
     loop4r = LoopfromPoints([point3r, point7r, point7, Airfoil.points.trailing_edge[1]], Lines)
@@ -372,20 +376,38 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
     map_entities(Airfoil, PhysicalGroups, io)
     
     end
-    
-    
-    
-    
-    
-    close(io)
-    
-    ## Open GMSH for visualization of the .geo file and changing the parameters
-    if open_geo
-        open_gmsh(Airfoil, dimension)
-    end
+        
+   close(io)
+
 
     return io    
 
 end
 
 
+### DEFAULT
+function create_geofile(filename::String )
+    domain_mesh_divisions=DomainMeshDivisions()
+    domain_info=DomainInfo()
+    boundary_layer=BoundaryLayer()
+    return create_geofile(filename, domain_mesh_divisions, domain_info, boundary_layer)
+end
+
+function create_geofile(filename::String, domain_mesh_divisions::DomainMeshDivisions)
+    domain_info=DomainInfo()
+    boundary_layer=BoundaryLayer()
+    return create_geofile(filename, domain_mesh_divisions, domain_info, boundary_layer)
+end
+
+function create_geofile(filename::String, domain_info::DomainInfo)
+    domain_mesh_divisions=DomainMeshDivisions()
+    boundary_layer=BoundaryLayer()
+    return create_geofile(filename, domain_mesh_divisions, domain_info, boundary_layer)
+end
+
+
+function create_geofile(filename::String,      boundary_layer::BoundaryLayer)
+    domain_mesh_divisions=DomainMeshDivisions()
+    domain_info=DomainInfo()
+    return create_geofile(filename, domain_mesh_divisions, domain_info, boundary_layer)
+end
