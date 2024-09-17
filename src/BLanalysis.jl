@@ -99,6 +99,9 @@ end
 function BoundaryLayer(h0::Float64, ds::DomainInfo)
     @unpack chord, H_offset = ds
     H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H_offset, h0, chord)
-    BoundaryLayer(H_levels, N_levels, G,Reynolds, h0)
+    BoundaryLayer(H_levels=H_levels, N_levels=N_levels, G=G, Reynolds=Reynolds, h0=h0)
 end
 
+function BoundaryLayer(H_levels::Float64,N_levels::Int64,G::Float64)
+    BoundaryLayer(H_levels=H_levels, N_levels=N_levels, G=G)
+end
