@@ -29,7 +29,6 @@ end
     chord::Float64 = 1.0
     C::Float64 = 6.0*chord
     L::Float64 = 6.0*chord
-    H_offset::Float64=0.35*chord
     Hz::Float64=0.2
     dimension::Int64=3
     elements::ElementShape=QUAD()
