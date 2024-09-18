@@ -78,7 +78,8 @@ function get_airfoil_features(filename::String, c::Float64, trailing_edge_points
     airfoil_points_list = CSV.File(filename, header=true) |> Tables.matrix
     formatting_airfoil_points!(airfoil_points_list,c)
     
-    trailing_edge_points = findTE(trailing_edge_points, c, airfoil_points_list)
+    trailing_edge_points,airfoil_points_list = findTE(trailing_edge_points, c, airfoil_points_list)
+
     sharp_end, sharp_idx = detect_end(trailing_edge_points)
     
     leading_edge_points = findLE(leading_edge_points, c, airfoil_points_list)
@@ -131,6 +132,8 @@ function verify_trailing_edge(airfoil_points_list::Matrix{Float64}, c::Float64)
 return airfoil_points_list
 end
 
+
+
 """
     findTE(trailing_edge_points, c::Float64, airfoil_points_list::Matrix{Float64})
 
@@ -138,12 +141,17 @@ Automatically detects the trailing edge points indexes
 """
 function findTE(trailing_edge_points, c::Float64, airfoil_points_list::Matrix{Float64})
     atol = 1e-6
+    if norm(airfoil_points_list[1,:] - airfoil_points_list[end,:])<c .* 0.5e-2
+        airfoil_points_list = airfoil_points_list[1:end-1,:]
+    end
+
     while isempty(trailing_edge_points)
         trailing_edge_points = findall(x -> isapprox(x, c; atol=atol), airfoil_points_list[:, 1])
         atol = atol * 2
     end
     sort!(trailing_edge_points)
-    trailing_edge_points
+    
+    return trailing_edge_points,airfoil_points_list
 end
 
 """
