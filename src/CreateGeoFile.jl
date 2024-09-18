@@ -50,7 +50,7 @@ PhysicalGroups = DataFrame(number=Int64[], name=String[], entities=Vector[], typ
 
 Airfoil = AirfoilParams( filename, chord, trailing_edge_points, leading_edge_points)
 
-io = start_writing(Airfoil, domain_info, domain_mesh_divisions, boundary_layer)
+io, geo_filename = start_writing(Airfoil, domain_info, domain_mesh_divisions, boundary_layer)
 
 addAirfoilPoints(Airfoil, Points, io)
 Airfoil.points.leading_edge
@@ -380,7 +380,7 @@ point7 = addPoint("L", "-L* " * string(x_tmp) * "*Sin(AoA) + " * string(y_tmp) *
    close(io)
 
 
-    return io    
+    return io,geo_filename
 
 end
 

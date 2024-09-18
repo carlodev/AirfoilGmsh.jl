@@ -7,8 +7,8 @@ function start_writing(Airfoil::AirfoilParams, domain_info::DomainInfo, domain_m
     @unpack H_levels,N_levels,G = boundary_layer
     @unpack AoA, chord, dimension,C,L, Hz  = domain_info
 
-
-    io = open("$(Airfoil.name)_$(dimension)D.geo", "w")
+    geo_filename = "$(Airfoil.name)_$(dimension)D.geo"
+    io = open(geo_filename, "w")
     write(io, "SetFactory(\"OpenCASCADE\");\n")
     
     write(io, "N_inlet = DefineNumber[ $(domain_mesh_divisions.Inlet.numdiv), Name \"Parameters/N_inlet\" ];\n")
@@ -40,7 +40,7 @@ function start_writing(Airfoil::AirfoilParams, domain_info::DomainInfo, domain_m
         write(io, "N_edge = DefineNumber[ $(domain_mesh_divisions.Edge.numdiv), Name \"Parameters/N_edge\" ];\n")
     end
 
-return io
+return io,geo_filename
 end
 
 
