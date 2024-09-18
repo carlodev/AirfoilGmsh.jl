@@ -11,7 +11,7 @@ using Optim
 using Optimization, OptimizationBBO
 using Parameters
 using CubicSplines
-
+using LinearAlgebra
 
 export DomainDivision
 export DomainMeshDivisions
