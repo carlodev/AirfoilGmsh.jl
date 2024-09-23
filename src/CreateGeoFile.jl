@@ -26,7 +26,6 @@ It is possible to create a mesh with the following options:
 | Thetraedreal   | 3D        | TETRA()    |
 
 """
-
 function create_geofile(filename::String, domain_mesh_divisions::DomainMeshDivisions, domain_info::DomainInfo, boundary_layer::BoundaryLayer)
 
 
