@@ -14,7 +14,9 @@ end
 Distinguish the upper and lower coordinates of the airfoil
 """
 function find_lower_upper(x::Vector{Float64},y::Vector{Float64})
-    origin_idx = findall(isapprox.(x,0.0))[1]
+    _,origin_idx = findmin(abs.(x) )
+
+    # origin_idx = findall(isapprox.(x,0.0))[1]
     n = length(x)
     if y[origin_idx+1]<0
         idx_upper = 1:origin_idx
@@ -25,6 +27,10 @@ function find_lower_upper(x::Vector{Float64},y::Vector{Float64})
     end
     return x[idx_upper],x[idx_lower],y[idx_upper],y[idx_lower]
 end
+
+
+z = rand(10) .- 0.5
+
 
 """
     get_airfoil_coordinates(filename::String)
