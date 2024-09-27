@@ -122,7 +122,7 @@ plot!(xlims =(0.0,1.0), ylims =(-0.2,0.65))
 plot!(xlabel = "x", ylabel = "y")
 ```
 """
-function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = [-0.1294, -0.0036, -0.0666, -0.01, 0.206, 0.2728, 0.2292, 0.1, 0.1,0.1], maxiters = 100.0, maxtime=100.0, save_cst=false)
+function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = [-0.1294, -0.0036, -0.0666, -0.01, 0.206, 0.2728, 0.2292, 0.1, 0.1,0.1], maxiters = 100.0, maxtime=100.0, write_cst=false)
     xu,xl,yu,yl = get_airfoil_coordinates(filename)
     y0 = [yu;yl]
 
@@ -141,7 +141,7 @@ function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = 
    
     #Using wl,wu the new coordinates x,y are computed
     x,y = CST_airfoil(wl,wu,dz,N)
-    save_cst && write_csv_cst(x,y,filename)
+    write_cst && write_csv_cst(x,y,filename)
    
     return x,y,wl,wu
 end
