@@ -131,8 +131,10 @@ function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = 
 
     split_idx = 4
     
+    ub = vcat(zeros(Int64, count(w0.<0)),    ones(Int64,count(w0.>0)))
+    lb = ub .- 1
     params = ( split_idx, xl,xu,dz,y0)
-    prob = Optimization.OptimizationProblem(error_function, w0, params, lb = [-1,-1,-1,0,0,0,0,0,0], ub = [0,0,0,1,1,1,1,1,1])
+    prob = Optimization.OptimizationProblem(error_function, w0, params, lb =lb, ub = ub)
     sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(), maxiters = maxiters,  maxtime = maxtime)
     sol = collect(sol)
     wl, wu = compute_wlwu(sol, split_idx)
