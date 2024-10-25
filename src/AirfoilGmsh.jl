@@ -10,9 +10,24 @@ using Plots
 using Optim
 using Optimization, OptimizationBBO
 using Parameters
+using CubicSplines
+using LinearAlgebra
+
+export DomainDivision
+export DomainMeshDivisions
+export DomainInfo
+export BoundaryLayer
+export ElementShape
+export QUAD
+export TRI
+export HEX
+export TETRA
+include("DefaultValues.jl")
+
 
 export from_url_to_csv
 include("ReadWeb.jl")
+
 
 export AirfoilPoints
 export AirfoilParams
@@ -23,8 +38,6 @@ export get_airfoil_name
 include("AirfoilUtils.jl")
 
 
-export start_writing
-include("WriteFileUtils.jl")
 
 export addAirfoilPoints
 export addShearPoint
@@ -43,8 +56,12 @@ export RecombineSurfaces
 export addPhysicalGroup
 include("GmshUtils.jl")
 
-export refinement_parameters
+
+
 include("BLanalysis.jl")
+
+export start_writing
+include("WriteFileUtils.jl")
 
 export map_entities
 include("MapLines.jl")

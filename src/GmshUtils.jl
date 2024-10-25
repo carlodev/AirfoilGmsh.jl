@@ -51,13 +51,13 @@ function addLine(a1, a2, Lines::Vector{Vector}, io::IOStream; tag="")
     return Lines
 end
 
-function addSpline(a, Lines::Vector{Vector}, io::IOStream; tag="")
+function addSpline(a, Lines::Vector{Vector}, io::IOStream; tag="", all=false)
     nn = length(Lines) + 1
-    if typeof(a) <:Vector
+    if all==false
         str_tmp = "Spline($nn) = {$(a[1]), $(a[2])};\n"
         push!(Lines, [nn, a[1][1], a[2], tag])
     else
-        str_tmp = "Spline($nn) = {$a};\n"
+        str_tmp = "Spline($nn) = {$(string(a)[2:end-1])};\n"
         push!(Lines, [nn, a[1], a[end], tag])
     end
     write(io, str_tmp)
@@ -83,11 +83,10 @@ function LoopfromPoints(a::Vector{Int64}, Lines::Vector{Vector})
     push!(lines_id, LinefromPoints(a[1], a[2], Lines))
     loop = Any[]
     push!(loop, lines_id[1])
-    #the second node
 
+    #the second node
     loop[end] > 0 ? ctrl_sing = 2 : ctrl_sing = 1
     count = 2
-
     while count <= length(a)
 
         loop[end] > 0 ? ctrl_sing = 2 : ctrl_sing = 1
@@ -131,7 +130,7 @@ function LinefromPoints(p1::Int64, p2::Int64, Lines::Vector{Vector})
     if line_found
         return line
     else
-        return "Line not found"
+        return @error("Line $(p1) $p2 not found")
     end
 end
 
@@ -153,13 +152,13 @@ function addPlaneSurface(a, Surfaces::Vector{Vector}, io::IOStream)
     push!(Surfaces, [nn, a])
 end
 
-function TransfiniteCurve(curves::Vector, nodes::String, progression::Union{Float64,String}, io::IOStream)
+function TransfiniteCurve(curves::Vector, nodes::String, progression::Union{Float64,String}, io::IOStream; ptype="Progression")
     str_curves = "$(curves[1])"
     for i = 2:1:length(curves)
         str_curves = str_curves * ", $(curves[i])"
 
     end
-    str_tmp = "Transfinite Curve {$str_curves} = $nodes Using Progression $progression; \n"
+    str_tmp = "Transfinite Curve {$str_curves} = $nodes Using $ptype $progression; \n"
     write(io, str_tmp)
 
 end
@@ -194,7 +193,7 @@ end
 
 function addPhysicalGroup(name::String, entities::Vector, type::String, PhysicalGroups::DataFrame, io::IOStream; add=false)
 
-    if type != "Point" && type != "Curve" && type != "Surface"
+    if type != "Point" && type != "Curve" && type != "Surface" && type != "Volume"
         error("Type of Physical Group not recognized, available:Point, Curve, Surface")
     end
 

@@ -1,4 +1,3 @@
-
 """
     yt(yh::Float64, G::Float64, N::Int)
 
@@ -91,17 +90,18 @@ function boundary_layer_characteristics(Re::Real, H::Real, h0::Real, chord::Floa
 end
 
 
-function refinement_parameters(Reynolds::Real, h0::Real, chord::Real)
-    if Reynolds < 0 && h0 < 0 #If no reynolds or height specified
-        return 0.35, 100, 1.12, h0
-    else
-        H = 0.35 * chord
-        if h0 < 0
-            h0 = chord * sqrt(74) * Reynolds^(-13 / 14)
-            println("Extimated h0 = $h0 m")
-        end
-        H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H, h0, chord)
+function BoundaryLayer(Reynolds::Int64,ds::DomainInfo )
+    @unpack chord = ds
+    h0 = chord * sqrt(74) * Reynolds^(-13 / 14)
+    BoundaryLayer(h0, ds)
+end
 
-        return H_levels, N_levels, G, h0
-    end
+function BoundaryLayer(h0::Float64, ds::DomainInfo)
+    @unpack chord, H_offset = ds
+    H_levels, N_levels, G, h0 = boundary_layer_characteristics(Reynolds, H_offset, h0, chord)
+    BoundaryLayer(H_levels=H_levels, N_levels=N_levels, G=G, Reynolds=Reynolds, h0=h0)
+end
+
+function BoundaryLayer(H_levels::Float64,N_levels::Int64,G::Float64)
+    BoundaryLayer(H_levels=H_levels, N_levels=N_levels, G=G)
 end

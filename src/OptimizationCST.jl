@@ -14,9 +14,11 @@ end
 Distinguish the upper and lower coordinates of the airfoil
 """
 function find_lower_upper(x::Vector{Float64},y::Vector{Float64})
-    origin_idx = findall(isapprox.(x,0.0))[1]
+    _,origin_idx = findmin(abs.(x) )
+
+    # origin_idx = findall(isapprox.(x,0.0))[1]
     n = length(x)
-    if y[origin_idx+1]<0
+    if y[origin_idx+1]<y[origin_idx-1]
         idx_upper = 1:origin_idx
         idx_lower = origin_idx+1:n
     else
@@ -25,6 +27,10 @@ function find_lower_upper(x::Vector{Float64},y::Vector{Float64})
     end
     return x[idx_upper],x[idx_lower],y[idx_upper],y[idx_lower]
 end
+
+
+z = rand(10) .- 0.5
+
 
 """
     get_airfoil_coordinates(filename::String)
@@ -122,7 +128,7 @@ plot!(xlims =(0.0,1.0), ylims =(-0.2,0.65))
 plot!(xlabel = "x", ylabel = "y")
 ```
 """
-function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = [-0.1294, -0.0036, -0.0666, -0.01, 0.206, 0.2728, 0.2292, 0.1, 0.1,0.1], maxiters = 100.0, maxtime=100.0)
+function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = [-0.1294, -0.0036, -0.0666, -0.01, 0.206, 0.2728, 0.2292, 0.1, 0.1,0.1], maxiters = 100.0, maxtime=100.0, write_cst=false)
     xu,xl,yu,yl = get_airfoil_coordinates(filename)
     y0 = [yu;yl]
 
@@ -131,15 +137,17 @@ function increase_resolution_airfoil(filename::String, N::Int64; dz = 0.0, w0 = 
 
     split_idx = 4
     
+    ub = vcat(zeros(Int64, count(w0.<0)),    ones(Int64,count(w0.>0)))
+    lb = ub .- 1
     params = ( split_idx, xl,xu,dz,y0)
-    prob = Optimization.OptimizationProblem(error_function, w0, params, lb = [-1,-1,-1,0,0,0,0,0,0], ub = [0,0,0,1,1,1,1,1,1])
+    prob = Optimization.OptimizationProblem(error_function, w0, params, lb =lb, ub = ub)
     sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(), maxiters = maxiters,  maxtime = maxtime)
     sol = collect(sol)
     wl, wu = compute_wlwu(sol, split_idx)
    
     #Using wl,wu the new coordinates x,y are computed
     x,y = CST_airfoil(wl,wu,dz,N)
-    write_csv_cst(x,y,filename)
+    write_cst && write_csv_cst(x,y,filename)
    
     return x,y,wl,wu
 end
