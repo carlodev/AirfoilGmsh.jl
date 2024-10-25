@@ -18,7 +18,7 @@ function find_lower_upper(x::Vector{Float64},y::Vector{Float64})
 
     # origin_idx = findall(isapprox.(x,0.0))[1]
     n = length(x)
-    if y[origin_idx+1]<0
+    if y[origin_idx+1]<y[origin_idx-1]
         idx_upper = 1:origin_idx
         idx_lower = origin_idx+1:n
     else
