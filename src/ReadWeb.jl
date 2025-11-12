@@ -9,16 +9,13 @@ url ="http://airfoiltools.com/airfoil/seligdatfile?airfoil=sd7003-il"
 filename = from_url_to_csv(url)
 ```
 """
-function from_url_to_csv(url::String)
+function from_url_to_csv(url::String, filename="")
     #Read From the website
-    @chain url begin
-        Downloads.download(IOBuffer())
-        s = String(take!(_))
-    end
+    io = IOBuffer()
+    Downloads.download(url, io)
+    seekstart(io)
+    s = readlines(io)
 
-    #Splitting rows
-    s = split(s, "\r\n")
-    
     coordinates = Float64[]
     empty_line = -1 #to identify if there is an empty line that distinguish the top from the bottom
 
@@ -68,7 +65,7 @@ function from_url_to_csv(url::String)
         end
     
     end
-    
+
     coordinates[end,:] == coordinates[empty_line,:]
     start_from_leading_edge = false
     first_equal = false
@@ -107,7 +104,9 @@ function from_url_to_csv(url::String)
     #find the name of the profile
     split_section = split(url[1:end-4], "/")
     profile_name = split_section[end]
-    filename = "$profile_name.csv"
+    if isempty(filename)
+        filename = "$profile_name.csv"
+    end
 
     #write csv file
     CSV.write(filename, df)
